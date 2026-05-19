@@ -1,0 +1,33 @@
+# CMake
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+
+# Qt
+*.user
+*.pro.user
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# WSL/Windows
+*.exe
+*.pdb
+*.ilk
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.cache
+
+# Секреты
+*.env
+!*.env.example
