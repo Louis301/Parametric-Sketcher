@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Parametric Sketcher",
+            // "type": "pwa-node",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/parametric_sketcher",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            // "environment": [
+            //     {"name": "QT_DEBUG_PLUGINS", "value": "1"}
+            // ],
+            // "externalConsole": false,
+            // "MIMode": "gdb",
+            // "miDebuggerPath": "/usr/bin/gdb",
+            // "setupCommands": [
+            //     {
+            //         "description": "Enable pretty-printing for gdb",
+            //         "text": "-enable-pretty-printing",
+            //         "ignoreFailures": true
+            //     }
+            // ],
+            "preLaunchTask": "CMake: Build"
+        }
+    ]
+}
