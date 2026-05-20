@@ -3,9 +3,9 @@
     "configurations": [
         {
             "name": "Debug Parametric Sketcher",
-            // "type": "pwa-node",
+            "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/parametric_sketcher",
+            "program": "${workspaceFolder}/build/cad_test",
             "args": [],
             "cwd": "${workspaceFolder}",
             // "environment": [
@@ -21,7 +21,8 @@
             //         "ignoreFailures": true
             //     }
             // ],
-            "preLaunchTask": "CMake: Build"
+            "preLaunchTask": "CMake: Build"  //,
+            // "stopAtEntry": false
         }
     ]
 }

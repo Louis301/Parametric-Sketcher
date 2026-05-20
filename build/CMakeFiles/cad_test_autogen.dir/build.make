@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/csoft/cad-test
+CMAKE_SOURCE_DIR = /mnt/c/Users/Louis301/Parametric-Sketcher
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/csoft/cad-test/build
+CMAKE_BINARY_DIR = /mnt/c/Users/Louis301/Parametric-Sketcher/build
 
 # Utility rule file for cad_test_autogen.
 
@@ -67,8 +67,8 @@ include CMakeFiles/cad_test_autogen.dir/compiler_depend.make
 include CMakeFiles/cad_test_autogen.dir/progress.make
 
 CMakeFiles/cad_test_autogen:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/root/csoft/cad-test/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target cad_test"
-	/usr/bin/cmake -E cmake_autogen /root/csoft/cad-test/build/CMakeFiles/cad_test_autogen.dir/AutogenInfo.json Debug
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target cad_test"
+	/usr/bin/cmake -E cmake_autogen /mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/cad_test_autogen.dir/AutogenInfo.json Debug
 
 cad_test_autogen: CMakeFiles/cad_test_autogen
 cad_test_autogen: CMakeFiles/cad_test_autogen.dir/build.make
@@ -83,6 +83,6 @@ CMakeFiles/cad_test_autogen.dir/clean:
 .PHONY : CMakeFiles/cad_test_autogen.dir/clean
 
 CMakeFiles/cad_test_autogen.dir/depend:
-	cd /root/csoft/cad-test/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/csoft/cad-test /root/csoft/cad-test /root/csoft/cad-test/build /root/csoft/cad-test/build /root/csoft/cad-test/build/CMakeFiles/cad_test_autogen.dir/DependInfo.cmake --color=$(COLOR)
+	cd /mnt/c/Users/Louis301/Parametric-Sketcher/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/c/Users/Louis301/Parametric-Sketcher /mnt/c/Users/Louis301/Parametric-Sketcher /mnt/c/Users/Louis301/Parametric-Sketcher/build /mnt/c/Users/Louis301/Parametric-Sketcher/build /mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/cad_test_autogen.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/cad_test_autogen.dir/depend
 

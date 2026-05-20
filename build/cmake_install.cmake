@@ -1,4 +1,4 @@
-# Install script for directory: /root/csoft/cad-test
+# Install script for directory: /mnt/c/Users/Louis301/Parametric-Sketcher
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/root/csoft/cad-test/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/mnt/c/Users/Louis301/Parametric-Sketcher/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

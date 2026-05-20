@@ -7,17 +7,17 @@
             "command": "cmake",
             "args": ["-B", "build", "-DCMAKE_BUILD_TYPE=Debug"],
             "options": { "cwd": "${workspaceFolder}" },
-            "group": "build",
+            "group": { "kind": "build", "isDefault": false },
             "problemMatcher": []
         },
         {
             "label": "CMake: Build",
             "type": "shell",
             "command": "cmake",
-            "args": ["--build", "build", "--target", "parametric_sketcher"],
+            "args": ["--build", "build", "--target", "cad_test"],
             "options": { "cwd": "${workspaceFolder}" },
-            "group": "build",
-            "dependsOn": "CMake: Configure"//,
+            "group": { "kind": "build", "isDefault": true },
+            "dependsOn": "CMake: Configure"   //,
             // "problemMatcher": "$gcc"
         },
         {

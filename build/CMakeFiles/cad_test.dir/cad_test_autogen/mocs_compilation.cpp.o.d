@@ -1,3 +1,2 @@
 CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o: \
- /root/csoft/cad-test/build/cad_test_autogen/mocs_compilation.cpp \
- /usr/include/stdc-predef.h
+  /mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/mocs_compilation.cpp

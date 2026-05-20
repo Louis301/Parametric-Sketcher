@@ -1,15 +1,15 @@
 {
-	"BUILD_DIR" : "/root/csoft/cad-test/build/cad_test_autogen",
-	"CMAKE_BINARY_DIR" : "/root/csoft/cad-test/build",
-	"CMAKE_CURRENT_BINARY_DIR" : "/root/csoft/cad-test/build",
-	"CMAKE_CURRENT_SOURCE_DIR" : "/root/csoft/cad-test",
+	"BUILD_DIR" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen",
+	"CMAKE_BINARY_DIR" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/mnt/c/Users/Louis301/Parametric-Sketcher",
 	"CMAKE_EXECUTABLE" : "/usr/bin/cmake",
 	"CMAKE_LIST_FILES" : 
 	[
-		"/root/csoft/cad-test/CMakeLists.txt",
-		"/root/csoft/cad-test/build/CMakeFiles/3.22.1/CMakeSystem.cmake",
+		"/mnt/c/Users/Louis301/Parametric-Sketcher/CMakeLists.txt",
+		"/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/3.22.1/CMakeSystem.cmake",
 		"/usr/share/cmake-3.22/Modules/CMakeSystemSpecificInitialize.cmake",
-		"/root/csoft/cad-test/build/CMakeFiles/3.22.1/CMakeCXXCompiler.cmake",
+		"/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/3.22.1/CMakeCXXCompiler.cmake",
 		"/usr/share/cmake-3.22/Modules/CMakeSystemSpecificInformation.cmake",
 		"/usr/share/cmake-3.22/Modules/CMakeGenericSystem.cmake",
 		"/usr/share/cmake-3.22/Modules/CMakeInitializeConfigs.cmake",
@@ -17,9 +17,12 @@
 		"/usr/share/cmake-3.22/Modules/Platform/UnixPaths.cmake",
 		"/usr/share/cmake-3.22/Modules/CMakeCXXInformation.cmake",
 		"/usr/share/cmake-3.22/Modules/CMakeLanguageInformation.cmake",
-		"/usr/share/cmake-3.22/Modules/Compiler/GNU-CXX.cmake",
+		"/usr/share/cmake-3.22/Modules/Compiler/Clang-CXX.cmake",
+		"/usr/share/cmake-3.22/Modules/Compiler/Clang.cmake",
+		"/usr/share/cmake-3.22/Modules/Compiler/CMakeCommonCompilerMacros.cmake",
 		"/usr/share/cmake-3.22/Modules/Compiler/GNU.cmake",
 		"/usr/share/cmake-3.22/Modules/Compiler/CMakeCommonCompilerMacros.cmake",
+		"/usr/share/cmake-3.22/Modules/Platform/Linux-Clang-CXX.cmake",
 		"/usr/share/cmake-3.22/Modules/Platform/Linux-GNU-CXX.cmake",
 		"/usr/share/cmake-3.22/Modules/Platform/Linux-GNU.cmake",
 		"/usr/share/cmake-3.22/Modules/CMakeCommonLanguageInclude.cmake",
@@ -71,13 +74,13 @@
 		"/usr/share/cmake-3.22/Modules/FindPackageHandleStandardArgs.cmake",
 		"/usr/share/cmake-3.22/Modules/FindPackageMessage.cmake"
 	],
-	"CMAKE_SOURCE_DIR" : "/root/csoft/cad-test",
+	"CMAKE_SOURCE_DIR" : "/mnt/c/Users/Louis301/Parametric-Sketcher",
 	"DEP_FILE" : "",
 	"DEP_FILE_RULE_NAME" : "",
 	"HEADERS" : [],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
-	"INCLUDE_DIR" : "/root/csoft/cad-test/build/cad_test_autogen/include",
-	"MOC_COMPILATION_FILE" : "/root/csoft/cad-test/build/cad_test_autogen/mocs_compilation.cpp",
+	"INCLUDE_DIR" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/include",
+	"MOC_COMPILATION_FILE" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/mocs_compilation.cpp",
 	"MOC_DEFINITIONS" : [ "QT_CORE_LIB", "QT_GUI_LIB", "QT_SQL_LIB", "QT_WIDGETS_LIB" ],
 	"MOC_DEPEND_FILTERS" : 
 	[
@@ -98,7 +101,7 @@
 		"/usr/include/c++/11",
 		"/usr/include/x86_64-linux-gnu/c++/11",
 		"/usr/include/c++/11/backward",
-		"/usr/lib/gcc/x86_64-linux-gnu/11/include",
+		"/usr/lib/llvm-14/lib/clang/14.0.0/include",
 		"/usr/local/include",
 		"/usr/include/x86_64-linux-gnu",
 		"/usr/include"
@@ -108,26 +111,26 @@
 	"MOC_PATH_PREFIX" : false,
 	"MOC_PREDEFS_CMD" : 
 	[
-		"/usr/bin/c++",
+		"/usr/bin/clang++",
 		"-dM",
 		"-E",
 		"-c",
 		"/usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp"
 	],
-	"MOC_PREDEFS_FILE" : "/root/csoft/cad-test/build/cad_test_autogen/moc_predefs.h",
+	"MOC_PREDEFS_FILE" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,
 	"MOC_SKIP" : [],
 	"MULTI_CONFIG" : false,
 	"PARALLEL" : 2,
-	"PARSE_CACHE_FILE" : "/root/csoft/cad-test/build/CMakeFiles/cad_test_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/cad_test_autogen.dir/ParseCache.txt",
 	"QT_MOC_EXECUTABLE" : "/usr/lib/qt5/bin/moc",
 	"QT_UIC_EXECUTABLE" : "/usr/lib/qt5/bin/uic",
 	"QT_VERSION_MAJOR" : 5,
 	"QT_VERSION_MINOR" : 15,
-	"SETTINGS_FILE" : "/root/csoft/cad-test/build/CMakeFiles/cad_test_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE" : "/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/cad_test_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
-		[ "/root/csoft/cad-test/src/main.cpp", "MU", null ]
+		[ "/mnt/c/Users/Louis301/Parametric-Sketcher/src/main.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],

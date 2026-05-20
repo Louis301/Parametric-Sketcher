@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/csoft/cad-test
+CMAKE_SOURCE_DIR = /mnt/c/Users/Louis301/Parametric-Sketcher
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/csoft/cad-test/build
+CMAKE_BINARY_DIR = /mnt/c/Users/Louis301/Parametric-Sketcher/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/cad_test.dir/depend.make
@@ -72,30 +72,30 @@ include CMakeFiles/cad_test.dir/flags.make
 CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o: CMakeFiles/cad_test.dir/flags.make
 CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o: cad_test_autogen/mocs_compilation.cpp
 CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o: CMakeFiles/cad_test.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/csoft/cad-test/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o -MF CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o.d -o CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o -c /root/csoft/cad-test/build/cad_test_autogen/mocs_compilation.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o -MF CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o.d -o CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o -c /mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/mocs_compilation.cpp
 
 CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/csoft/cad-test/build/cad_test_autogen/mocs_compilation.cpp > CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.i
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/mocs_compilation.cpp > CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.i
 
 CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/csoft/cad-test/build/cad_test_autogen/mocs_compilation.cpp -o CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.s
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/mocs_compilation.cpp -o CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.s
 
 CMakeFiles/cad_test.dir/src/main.cpp.o: CMakeFiles/cad_test.dir/flags.make
 CMakeFiles/cad_test.dir/src/main.cpp.o: ../src/main.cpp
 CMakeFiles/cad_test.dir/src/main.cpp.o: CMakeFiles/cad_test.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/csoft/cad-test/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/cad_test.dir/src/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/cad_test.dir/src/main.cpp.o -MF CMakeFiles/cad_test.dir/src/main.cpp.o.d -o CMakeFiles/cad_test.dir/src/main.cpp.o -c /root/csoft/cad-test/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/cad_test.dir/src/main.cpp.o"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/cad_test.dir/src/main.cpp.o -MF CMakeFiles/cad_test.dir/src/main.cpp.o.d -o CMakeFiles/cad_test.dir/src/main.cpp.o -c /mnt/c/Users/Louis301/Parametric-Sketcher/src/main.cpp
 
 CMakeFiles/cad_test.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/cad_test.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/csoft/cad-test/src/main.cpp > CMakeFiles/cad_test.dir/src/main.cpp.i
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/c/Users/Louis301/Parametric-Sketcher/src/main.cpp > CMakeFiles/cad_test.dir/src/main.cpp.i
 
 CMakeFiles/cad_test.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/cad_test.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/csoft/cad-test/src/main.cpp -o CMakeFiles/cad_test.dir/src/main.cpp.s
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/c/Users/Louis301/Parametric-Sketcher/src/main.cpp -o CMakeFiles/cad_test.dir/src/main.cpp.s
 
 # Object files for target cad_test
 cad_test_OBJECTS = \
@@ -114,7 +114,7 @@ cad_test: /usr/lib/x86_64-linux-gnu/libpq.so
 cad_test: /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.15.3
 cad_test: /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.15.3
 cad_test: CMakeFiles/cad_test.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/root/csoft/cad-test/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable cad_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable cad_test"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/cad_test.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -126,6 +126,6 @@ CMakeFiles/cad_test.dir/clean:
 .PHONY : CMakeFiles/cad_test.dir/clean
 
 CMakeFiles/cad_test.dir/depend:
-	cd /root/csoft/cad-test/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/csoft/cad-test /root/csoft/cad-test /root/csoft/cad-test/build /root/csoft/cad-test/build /root/csoft/cad-test/build/CMakeFiles/cad_test.dir/DependInfo.cmake --color=$(COLOR)
+	cd /mnt/c/Users/Louis301/Parametric-Sketcher/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/c/Users/Louis301/Parametric-Sketcher /mnt/c/Users/Louis301/Parametric-Sketcher /mnt/c/Users/Louis301/Parametric-Sketcher/build /mnt/c/Users/Louis301/Parametric-Sketcher/build /mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/cad_test.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/cad_test.dir/depend
 

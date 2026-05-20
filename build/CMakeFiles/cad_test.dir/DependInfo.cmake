@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/root/csoft/cad-test/build/cad_test_autogen/mocs_compilation.cpp" "CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o" "gcc" "CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o.d"
-  "/root/csoft/cad-test/src/main.cpp" "CMakeFiles/cad_test.dir/src/main.cpp.o" "gcc" "CMakeFiles/cad_test.dir/src/main.cpp.o.d"
+  "/mnt/c/Users/Louis301/Parametric-Sketcher/build/cad_test_autogen/mocs_compilation.cpp" "CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o" "gcc" "CMakeFiles/cad_test.dir/cad_test_autogen/mocs_compilation.cpp.o.d"
+  "/mnt/c/Users/Louis301/Parametric-Sketcher/src/main.cpp" "CMakeFiles/cad_test.dir/src/main.cpp.o" "gcc" "CMakeFiles/cad_test.dir/src/main.cpp.o.d"
   )
 
 # Targets to which this target links.
