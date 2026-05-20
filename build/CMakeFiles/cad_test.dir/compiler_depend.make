@@ -352,8 +352,13 @@ CMakeFiles/cad_test.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/c++/11/backward/auto_ptr.h \
   /usr/include/c++/11/bits/ranges_uninitialized.h \
   /usr/include/c++/11/bits/uses_allocator_args.h \
-  /usr/include/c++/11/pstl/glue_memory_defs.h
+  /usr/include/c++/11/pstl/glue_memory_defs.h \
+  /usr/include/c++/11/iostream \
+  /usr/include/c++/11/istream \
+  /usr/include/c++/11/bits/istream.tcc
 
+
+/usr/include/c++/11/bits/istream.tcc:
 
 /usr/include/c++/11/pstl/glue_memory_defs.h:
 
@@ -490,6 +495,8 @@ CMakeFiles/cad_test.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/c++/11/bits/streambuf_iterator.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/FILE.h:
+
+/usr/include/c++/11/iostream:
 
 /usr/include/c++/11/bits/node_handle.h:
 
@@ -718,6 +725,8 @@ CMakeFiles/cad_test.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/x86_64-linux-gnu/qt5/QtCore/qconfig.h:
 
 /usr/include/x86_64-linux-gnu/bits/endianness.h:
+
+/usr/include/c++/11/istream:
 
 /usr/include/x86_64-linux-gnu/qt5/QtCore/qsystemdetection.h:
 
