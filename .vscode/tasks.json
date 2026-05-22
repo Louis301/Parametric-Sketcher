@@ -17,8 +17,7 @@
             "args": ["--build", "build", "--target", "cad_test"],
             "options": { "cwd": "${workspaceFolder}" },
             "group": { "kind": "build", "isDefault": true },
-            "dependsOn": "CMake: Configure"   //,
-            // "problemMatcher": "$gcc"
+            "dependsOn": "CMake: Configure"
         },
         {
             "label": "Run Tests",

@@ -3,9 +3,6 @@
 #include <QSqlError>
 #include <QDebug>
 
-
-#include <iostream>
-
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -21,9 +18,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    qDebug() << "✓ Connected to PostgreSQL";
-    qDebug() << "✓ Qt version:" << QT_VERSION_STR;
-    std::cout << "0101010\n";
+    qDebug() << "- Connected to PostgreSQL";
+    qDebug() << "- Qt version:" << QT_VERSION_STR;
 
     return 0;
 }

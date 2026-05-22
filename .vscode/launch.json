@@ -8,21 +8,7 @@
             "program": "${workspaceFolder}/build/cad_test",
             "args": [],
             "cwd": "${workspaceFolder}",
-            // "environment": [
-            //     {"name": "QT_DEBUG_PLUGINS", "value": "1"}
-            // ],
-            // "externalConsole": false,
-            // "MIMode": "gdb",
-            // "miDebuggerPath": "/usr/bin/gdb",
-            // "setupCommands": [
-            //     {
-            //         "description": "Enable pretty-printing for gdb",
-            //         "text": "-enable-pretty-printing",
-            //         "ignoreFailures": true
-            //     }
-            // ],
-            "preLaunchTask": "CMake: Build"  //,
-            // "stopAtEntry": false
+            "preLaunchTask": "CMake: Build"
         }
     ]
 }
