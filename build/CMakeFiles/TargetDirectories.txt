@@ -1,4 +1,0 @@
-/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/cad_test.dir
-/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/Louis301/Parametric-Sketcher/build/CMakeFiles/cad_test_autogen.dir
