@@ -12,11 +12,13 @@
 #include <QDebug>
 
 struct Point { 
-	double x {-1};
-	double y {-1}; 
-	double z {-1}; 
+	double x {-1.0};
+	double y {-1.0}; 
+	double z {-1.0}; 
 	// bool is_set {false};
 };
+
+bool point_set_mode = false;  // иструмент ТОЧКА
 
 // ..передача событий в лямбду
 class EventRouter : public QObject {
@@ -77,65 +79,39 @@ int main(int argc, char* argv[])
 		p.drawText(10, DIVIDER_Y + 20, "П1 (план)");
 		
 		// -- Отрисовка точек на видах --
-		p.setPen(Qt::NoPen);
-
-		
-		for (const auto& pt : points) {   // П2
+		for (const auto& pt : points) 
+		{
+			p.setPen(Qt::NoPen);
 			p.setBrush(QBrush(Qt::blue));
 			p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
 
-			if (pt.z != -1)
+			if (pt.z != -1.0)
 			{
 				p.setBrush(QBrush(Qt::green));
-p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
+        p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
+				
+				p.setPen(QPen(Qt::green, 2, Qt::DashLine));
+				p.drawLine(QPointF(pt.x, DIVIDER_Y), QPointF(pt.x, pt.z));
 
-	// p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
-
-      // связи проекций
-      // auto it = std::find_if(points.begin(), points.end(),
-      //   [&](const Point& p) { return pt.x == p.x; });
-
-			p.setPen(QPen(Qt::green, 2, Qt::DashLine));
-			p.drawLine(QPointF(pt.x, DIVIDER_Y), QPointF(pt.x, pt.z));
-
-			p.setPen(QPen(Qt::blue, 2, Qt::DashLine));
-			p.drawLine(QPointF(pt.x, pt.y), QPointF(pt.x, DIVIDER_Y));
-
-			p.setPen(Qt::NoPen);
+				p.setPen(QPen(Qt::blue, 2, Qt::DashLine));
+				p.drawLine(QPointF(pt.x, pt.y), QPointF(pt.x, DIVIDER_Y));
 			}
-			
 		}
 
-		// p.setBrush(QBrush(Qt::green));
-		// for (const auto& pt : points_2)  // П1
-		// { 
-		// 	p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
-
-    //   // связи проекций
-    //   auto it = std::find_if(points.begin(), points.end(),
-    //     [&](const Point& p) { return pt.x == p.x; });
-
-		// 	p.setPen(QPen(Qt::green, 2, Qt::DashLine));
-		// 	p.drawLine(QPointF(it->x, DIVIDER_Y), QPointF(pt.x, pt.y));
-
-		// 	p.setPen(QPen(Qt::blue, 2, Qt::DashLine));
-		// 	p.drawLine(QPointF(it->x, it->y), QPointF(it->x, DIVIDER_Y));
-
-		// 	p.setPen(Qt::NoPen);
-		// }
-
-		// -- Вертикальная направляющая (при работе в П1) --
-		if (activeX >= 0) {     // y > DIVIDER_Y      режим установки точки
-			// p.setPen(QPen(Qt::gray, 2, Qt::DashLine));
-			// p.drawLine(activeX, activeY, activeX, y);   //activeY
+		// -- режим установки точки  ПРИВЯЗКА выравнивание
+		p.setPen(Qt::NoPen);
+		if (activeX >= 0) 
+		{
 			p.setPen(Qt::black);
       p.drawEllipse(QPointF(activeX, y), 3, 3);
 			p.setPen(Qt::NoPen);
 		}
+
 		panel->setPixmap(pixmap);
 	};
 
 	redraw();  // отрисовка
+	qDebug() << "Укажите проекцию на П2 (вид спереди)";
 	
 	// -------------------------------------- СОБЫТИЯ
 	EventRouter router;
@@ -149,40 +125,37 @@ p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
 			
 			if (me->button() == Qt::LeftButton)
 			{
-				double x = static_cast<double>(me->x());
-				double y = static_cast<double>(me->y());
+				double mause_x = static_cast<double>(me->x());
+				double mause_y = static_cast<double>(me->y());
 
-				if ( me->y() <= DIVIDER_Y)  // П2, вид спереди
+				if (me->y() <= DIVIDER_Y  &&  !point_set_mode)  // вид спереди
 				{
-					
-					points.push_back({x, y});  // локализация точек
-					redraw(y);
+					points.push_back({mause_x, mause_y});  
+					point_set_mode = true;
+          qDebug() << "Укажите проекцию на П1 (вид сверху)";
+					redraw(mause_y);
 					return true;
 				}
-				else  // П1, вид сверху
+				
+				if ( me->y() > DIVIDER_Y  &&  point_set_mode) // П1, вид сверху
 				{
-					// bool has_projection_point = std::any_of(points_2.begin(), points_2.end(), 
-					// 	[&](const Point& p) { 
-					// 		return  p.x == activeX && p.y == activeY;
-					// });
+				  auto it = std::find_if(points.begin(), points.end(), 
+					  [&](const Point& p) {return  p.x == activeX && p.y == activeY;});
 
-					  auto it = std::find_if(points.begin(), points.end(),
-        [&](const Point& p) {return  p.x == activeX && p.y == activeY;});
-				  
-				it->z = y;
+					if (it != points.end())
+					{
+						it->z = mause_y;
+						
+						// qDebug() << "== задана точка";
+						
+						point_set_mode = false;
+						redraw(mause_y);
 
-				if (it != points.end())
-				{
-					it->z = y;
-          redraw(y);
-					  return true;
-				} 
-				  // if (activeX >= 0 && !has_projection_point)  // ..отображается вспомогательная вертикаль (erfpfntkm)
-					// {   
-            // points_2.push_back({activeX, y}); 
-					  // redraw(y);
-					  // return true;
-					// }
+            qDebug() << "Укажите проекцию на П2 (вид спереди)";
+
+						activeX = activeY = -1;
+						return true;
+					} 
 				}
 			}
 		}
@@ -192,68 +165,33 @@ p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
 		{
 			QMouseEvent* me = static_cast<QMouseEvent*>(e);
 			QPointF cursorPos = me->pos();
-      bool found = false;
 
-				// bool found = false;
-
-				for (const auto& pt : points) {
-// double dx = cursorPos.x() - pt.x;
-				// double dy = cursorPos.y() - pt.y;
-				// double dist = std::sqrt(dx*dx + dy*dy);
-
-					if (std::abs(cursorPos.x() - pt.x) <= EPS) {
-						activeX = pt.x;
-						activeY = pt.y;
-
-						// QToolTip::showText(me->globalPos(), "hint", panel);   // работает с задержкой
-
-						found = true;
-						break;
-					}
-				}
-
-				if (!found) {
-					activeX = -1.0;
-					// QToolTip::hideText();
-				}
-					
-				redraw(cursorPos.y());
-
+			if (point_set_mode)
+			{
+        Point last_point =  points[points.size() - 1];   // ПОЧЕМУ c итератором не работает??
 			
-			// for (const auto& pt : points) 
-			// {
-			// 	double dx = cursorPos.x() - pt.x;
-			// 	double dy = cursorPos.y() - pt.y;
-			// 	double dist = std::sqrt(dx*dx + dy*dy);
-			// 	bool found = false;
-
-			// 	for (const auto& pt : points) {
-			// 		if (std::abs(cursorPos.x() - pt.x) <= EPS) {
-			// 			activeX = pt.x;
-			// 			activeY = pt.y;
-
-			// 			// QToolTip::showText(me->globalPos(), "hint", panel);   // работает с задержкой
-
-			// 			found = true;
-			// 			break;
-			// 		}
-			// 	}
-
-			// 	if (!found) {
-			// 		activeX = -1.0;
-			// 		// QToolTip::hideText();
-			// 	}
-					
-			// 	redraw(cursorPos.y());
-			// }
+				if (
+					 std::abs(cursorPos.x() - last_point.x) <= EPS  && 
+					cursorPos.y() >= DIVIDER_Y
+				)
+				{
+					activeX = last_point.x;
+			 		activeY = last_point.y;
+				}
+				else
+				{
+					activeX = -1.0;
+				}
+			}
+			
+			redraw(cursorPos.y());
 			return false;
 		}
 
 		// -- Выход за пределы панели -- 
 		else if (e->type() == QEvent::Leave) 
 		{
-			activeX = -1.0;
-			// QToolTip::hideText();
+			activeX = activeY = -1.0;
       redraw();
 			return false;
 		}
