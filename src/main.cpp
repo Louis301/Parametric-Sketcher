@@ -28,17 +28,20 @@ int main(int argc, char* argv[]) {
 	QApplication app(argc, argv);
 
 	// -- Иниц-ция диалогового окна --
+  const int window_x_max {400};
+	const int window_y_max {800};
+
 	QWidget window;
-	window.resize(400, 400);
+	window.resize(window_x_max, window_y_max);
 	window.setWindowTitle("Canvas");
 
   // -- Панель холста --
 	QVBoxLayout* layout = new QVBoxLayout(&window);
 	QLabel* panel = new QLabel(&window);
-	panel->setMinimumSize(400, 400);
-	panel->setMaximumSize(400, 400);
+	panel->setMinimumSize(window_x_max, window_y_max);
+	panel->setMaximumSize(window_x_max, window_y_max);
 	panel->setStyleSheet("background-color: white; border: 1px solid #ff6060;");
-  panel->setMouseTracking(true);  // ⚠️ Важно: отслеживание движения мыши без нажатия
+  panel->setMouseTracking(true);
 	layout->addWidget(panel);
 
 	// -- Холст --
@@ -46,8 +49,45 @@ int main(int argc, char* argv[]) {
 	pixmap.fill(Qt::white);
 	panel->setPixmap(pixmap);
 
+	// -------------------------------------- ЭПЮР
+	const int DIVIDER_Y = window_y_max / 2;  // y-координата горизонтального разделителя
+	const double HOVER_TOLERANCE = 10.0;  // допуск по X для привязки к точке, пиксели
+	std::vector<Point> points;  // массив точек (план: верхняя зона)
+	double activeX = -1.0;  // текущая активная абсцисса для линии связи
+
+	auto redraw = [&](double y=0.0) 
+	{
+		QPainter p(&pixmap);
+		p.setRenderHint(QPainter::Antialiasing);
+		p.fillRect(pixmap.rect(), Qt::white);
+		
+		// -- Ось проекций --
+		p.setPen(QPen(Qt::black, 2));
+		p.drawLine(0, DIVIDER_Y, pixmap.width(), DIVIDER_Y);
+		p.drawText(10, DIVIDER_Y - 10, "ПЛАН (вид сверху)");
+		p.drawText(10, DIVIDER_Y + 20, "ФРОНТАЛЬ (вид спереди)");
+		
+		// -- Точки на "плане" --
+		p.setPen(Qt::NoPen);
+		p.setBrush(QBrush(Qt::blue));
+		for (const auto& pt : points) {
+			p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
+		}
+		
+		// -- Вертикальная направляющая (область фронтали) --
+		if (activeX >= 0 && y > DIVIDER_Y) {
+			p.setPen(QPen(Qt::gray, 2, Qt::DashLine));
+			p.drawLine(activeX, 0, activeX, pixmap.height());
+			p.setPen(Qt::black);
+			// p.drawText(activeX + 5, DIVIDER_Y - 5, QString("X = %1").arg(activeX, 0, 'f', 0));
+		}
+		
+		panel->setPixmap(pixmap);
+	};
+
+	redraw();  // отрисовка
+	
 	// -------------------------------------- СОБЫТИЯ
-	std::vector<Point> points;
 	EventRouter router;
 	const double HOVER_RADIUS = 5.0;
 
@@ -58,22 +98,12 @@ int main(int argc, char* argv[]) {
 		{
 			QMouseEvent* me = static_cast<QMouseEvent*>(e);
 			
-			if (me->button() == Qt::LeftButton)  
+			if (me->button() == Qt::LeftButton && me->y() <= DIVIDER_Y)  
 			{
 				double x = static_cast<double>(me->x());
 				double y = static_cast<double>(me->y());
-
 				points.push_back({x, y});  // локализация точек
-				// qDebug() << "[SAVE] Point #" << points.size() << " | x:" << points.back().x << " y:" << points.back().y;
-
-				// -- Отрисовка точек -- 
-				QPainter p(&pixmap);
-				p.setRenderHint(QPainter::Antialiasing);
-				p.setPen(Qt::NoPen);
-				p.setBrush(QBrush(Qt::blue));
-				p.drawEllipse(QPointF(x, y), 5, 5);
-				panel->setPixmap(pixmap);
-				
+				redraw(y);
 				return true;
 			}
 		}
@@ -81,29 +111,40 @@ int main(int argc, char* argv[]) {
 		else if (e->type() == QEvent::MouseMove) {
 			QMouseEvent* me = static_cast<QMouseEvent*>(e);
 			QPointF cursorPos = me->pos();
-				
-			for (const auto& pt : points) {
+      bool found = false;
+			for (const auto& pt : points) 
+			{
 				double dx = cursorPos.x() - pt.x;
 				double dy = cursorPos.y() - pt.y;
 				double dist = std::sqrt(dx*dx + dy*dy);
-				
-				if (dist <= HOVER_RADIUS) {
-					QString hint = QString("Point: (%1, %2)")  // отрисовка хинта
-						.arg(pt.x, 0, 'f', 1)
-						.arg(pt.y, 0, 'f', 1);
-					QToolTip::showText(me->globalPos(), hint, panel);
-					return true;
+				bool found = false;
+				for (const auto& pt : points) {
+					if (std::abs(cursorPos.x() - pt.x) <= HOVER_TOLERANCE) {
+						activeX = pt.x;
+						// QString hint = QString("P: X=%1, Y=%2")
+						// 	.arg(pt.x, 0, 'f', 1)
+						// 	.arg(pt.y, 0, 'f', 1);
+						// QToolTip::showText(me->globalPos(), hint, panel);
+						found = true;
+						break;
+					}
 				}
+				if (!found) {
+					activeX = -1.0;
+					// QToolTip::hideText();
+				}
+				redraw(cursorPos.y());
 			}
-			QToolTip::hideText();  // ..точка не найдена
+			// QToolTip::hideText();  // ..точка не найдена
 			return false;
 		}
 		// -- Выход за пределы панели -- 
 		else if (e->type() == QEvent::Leave) {
-			QToolTip::hideText();
+			activeX = -1.0;
+      redraw();
+			// QToolTip::hideText();
 			return false;
 		}
-
 		return false;
 	};
 
