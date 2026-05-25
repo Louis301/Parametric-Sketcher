@@ -60,28 +60,23 @@ int main(int argc, char* argv[]) {
 		QPainter p(&pixmap);
 		p.setRenderHint(QPainter::Antialiasing);
 		p.fillRect(pixmap.rect(), Qt::white);
-		
 		// -- Ось проекций --
 		p.setPen(QPen(Qt::black, 2));
 		p.drawLine(0, DIVIDER_Y, pixmap.width(), DIVIDER_Y);
-		p.drawText(10, DIVIDER_Y - 10, "ПЛАН (вид сверху)");
-		p.drawText(10, DIVIDER_Y + 20, "ФРОНТАЛЬ (вид спереди)");
-		
+		p.drawText(10, DIVIDER_Y - 10, "П2 (фронт)");
+		p.drawText(10, DIVIDER_Y + 20, "П1 (план)");
 		// -- Точки на "плане" --
 		p.setPen(Qt::NoPen);
 		p.setBrush(QBrush(Qt::blue));
 		for (const auto& pt : points) {
 			p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
-		}
-		
+		}		
 		// -- Вертикальная направляющая (область фронтали) --
 		if (activeX >= 0 && y > DIVIDER_Y) {
 			p.setPen(QPen(Qt::gray, 2, Qt::DashLine));
 			p.drawLine(activeX, 0, activeX, pixmap.height());
 			p.setPen(Qt::black);
-			// p.drawText(activeX + 5, DIVIDER_Y - 5, QString("X = %1").arg(activeX, 0, 'f', 0));
 		}
-		
 		panel->setPixmap(pixmap);
 	};
 
@@ -121,28 +116,21 @@ int main(int argc, char* argv[]) {
 				for (const auto& pt : points) {
 					if (std::abs(cursorPos.x() - pt.x) <= HOVER_TOLERANCE) {
 						activeX = pt.x;
-						// QString hint = QString("P: X=%1, Y=%2")
-						// 	.arg(pt.x, 0, 'f', 1)
-						// 	.arg(pt.y, 0, 'f', 1);
-						// QToolTip::showText(me->globalPos(), hint, panel);
 						found = true;
 						break;
 					}
 				}
 				if (!found) {
 					activeX = -1.0;
-					// QToolTip::hideText();
 				}
 				redraw(cursorPos.y());
 			}
-			// QToolTip::hideText();  // ..точка не найдена
 			return false;
 		}
 		// -- Выход за пределы панели -- 
 		else if (e->type() == QEvent::Leave) {
 			activeX = -1.0;
       redraw();
-			// QToolTip::hideText();
 			return false;
 		}
 		return false;
