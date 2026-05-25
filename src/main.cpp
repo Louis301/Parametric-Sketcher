@@ -3,10 +3,12 @@
 #include <QLabel>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QToolTip>
 #include <QVBoxLayout>
+#include <QPixmap>
 #include <vector>
-#include <QDebug>
-#include <functional>
+#include <cmath>
+#include <QString>
 
 struct Point {
 	double x; double y; };
@@ -36,6 +38,7 @@ int main(int argc, char* argv[]) {
 	panel->setMinimumSize(400, 400);
 	panel->setMaximumSize(400, 400);
 	panel->setStyleSheet("background-color: white; border: 1px solid #ff6060;");
+  panel->setMouseTracking(true);  // ⚠️ Важно: отслеживание движения мыши без нажатия
 	layout->addWidget(panel);
 
 	// -- Холст --
@@ -43,12 +46,14 @@ int main(int argc, char* argv[]) {
 	pixmap.fill(Qt::white);
 	panel->setPixmap(pixmap);
 
-	// -- Установка и сохранение точек -- 
+	// -------------------------------------- СОБЫТИЯ
 	std::vector<Point> points;
 	EventRouter router;
+	const double HOVER_RADIUS = 5.0;
 
 	router.handler = [&](QEvent* e) 
 	{
+		// -- Установка и сохранение точек -- 
 		if (e->type() == QEvent::MouseButtonPress) 
 		{
 			QMouseEvent* me = static_cast<QMouseEvent*>(e);
@@ -68,10 +73,37 @@ int main(int argc, char* argv[]) {
 				p.setBrush(QBrush(Qt::blue));
 				p.drawEllipse(QPointF(x, y), 5, 5);
 				panel->setPixmap(pixmap);
-
-				return true;  // индикатор корректной обработки ЛКМ
+				
+				return true;
 			}
 		}
+		// -- Наведение на установленную точку --
+		else if (e->type() == QEvent::MouseMove) {
+			QMouseEvent* me = static_cast<QMouseEvent*>(e);
+			QPointF cursorPos = me->pos();
+				
+			for (const auto& pt : points) {
+				double dx = cursorPos.x() - pt.x;
+				double dy = cursorPos.y() - pt.y;
+				double dist = std::sqrt(dx*dx + dy*dy);
+				
+				if (dist <= HOVER_RADIUS) {
+					QString hint = QString("Point: (%1, %2)")  // отрисовка хинта
+						.arg(pt.x, 0, 'f', 1)
+						.arg(pt.y, 0, 'f', 1);
+					QToolTip::showText(me->globalPos(), hint, panel);
+					return true;
+				}
+			}
+			QToolTip::hideText();  // ..точка не найдена
+			return false;
+		}
+		// -- Выход за пределы панели -- 
+		else if (e->type() == QEvent::Leave) {
+			QToolTip::hideText();
+			return false;
+		}
+
 		return false;
 	};
 
