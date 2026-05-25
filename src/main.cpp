@@ -11,7 +11,12 @@
 #include <QString>
 #include <QDebug>
 
-struct Point { double x; double y; };
+struct Point { 
+	double x {-1};
+	double y {-1}; 
+	double z {-1}; 
+	// bool is_set {false};
+};
 
 // ..передача событий в лямбду
 class EventRouter : public QObject {
@@ -52,13 +57,14 @@ int main(int argc, char* argv[])
 
 	// -------------------------------------- ЭПЮР
 	const int DIVIDER_Y {window_y_max / 2};  // y-координата горизонтального разделителя
-	constexpr double HOVER_TOLERANCE {5};  // 1e-9 // допуск по X для привязки к точке, пиксели
+	constexpr double EPS {5.0};  // 1e-9 // допуск по X для привязки к точке, пиксели
 	double activeX {-1.0};  // текущая активная абсцисса для линии связи
+	double activeY {-1.0};
 
 	std::vector<Point> points;  // массив точек (верхняя зона)
 	std::vector<Point> points_2;
 
-	auto redraw = [&](double y=0.0) 
+	auto redraw = [&](double y = 0.0) 
 	{
 		QPainter p(&pixmap);
 		p.setRenderHint(QPainter::Antialiasing);
@@ -73,21 +79,58 @@ int main(int argc, char* argv[])
 		// -- Отрисовка точек на видах --
 		p.setPen(Qt::NoPen);
 
-		p.setBrush(QBrush(Qt::blue));
+		
 		for (const auto& pt : points) {   // П2
+			p.setBrush(QBrush(Qt::blue));
 			p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
+
+			if (pt.z != -1)
+			{
+				p.setBrush(QBrush(Qt::green));
+p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
+
+	// p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
+
+      // связи проекций
+      // auto it = std::find_if(points.begin(), points.end(),
+      //   [&](const Point& p) { return pt.x == p.x; });
+
+			p.setPen(QPen(Qt::green, 2, Qt::DashLine));
+			p.drawLine(QPointF(pt.x, DIVIDER_Y), QPointF(pt.x, pt.z));
+
+			p.setPen(QPen(Qt::blue, 2, Qt::DashLine));
+			p.drawLine(QPointF(pt.x, pt.y), QPointF(pt.x, DIVIDER_Y));
+
+			p.setPen(Qt::NoPen);
+			}
+			
 		}
 
-		p.setBrush(QBrush(Qt::green));
-		for (const auto& pt : points_2) {   // П1
-			p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
-		}
+		// p.setBrush(QBrush(Qt::green));
+		// for (const auto& pt : points_2)  // П1
+		// { 
+		// 	p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
+
+    //   // связи проекций
+    //   auto it = std::find_if(points.begin(), points.end(),
+    //     [&](const Point& p) { return pt.x == p.x; });
+
+		// 	p.setPen(QPen(Qt::green, 2, Qt::DashLine));
+		// 	p.drawLine(QPointF(it->x, DIVIDER_Y), QPointF(pt.x, pt.y));
+
+		// 	p.setPen(QPen(Qt::blue, 2, Qt::DashLine));
+		// 	p.drawLine(QPointF(it->x, it->y), QPointF(it->x, DIVIDER_Y));
+
+		// 	p.setPen(Qt::NoPen);
+		// }
 
 		// -- Вертикальная направляющая (при работе в П1) --
-		if (activeX >= 0 && y > DIVIDER_Y) {
-			p.setPen(QPen(Qt::gray, 2, Qt::DashLine));
-			p.drawLine(activeX, 0, activeX, pixmap.height());
+		if (activeX >= 0) {     // y > DIVIDER_Y      режим установки точки
+			// p.setPen(QPen(Qt::gray, 2, Qt::DashLine));
+			// p.drawLine(activeX, activeY, activeX, y);   //activeY
 			p.setPen(Qt::black);
+      p.drawEllipse(QPointF(activeX, y), 3, 3);
+			p.setPen(Qt::NoPen);
 		}
 		panel->setPixmap(pixmap);
 	};
@@ -111,23 +154,35 @@ int main(int argc, char* argv[])
 
 				if ( me->y() <= DIVIDER_Y)  // П2, вид спереди
 				{
+					
 					points.push_back({x, y});  // локализация точек
 					redraw(y);
 					return true;
 				}
 				else  // П1, вид сверху
 				{
-					bool has_projection_point = std::any_of(points_2.begin(), points_2.end(), 
-						[&](const Point& p) { 
-							return  p.x == activeX;
-					});
-						
-				  if (activeX >= 0 && !has_projection_point)  // ..отображается вспомогательная вертикаль
-					{   
-            points_2.push_back({activeX, y}); 
-					  redraw(y);
+					// bool has_projection_point = std::any_of(points_2.begin(), points_2.end(), 
+					// 	[&](const Point& p) { 
+					// 		return  p.x == activeX && p.y == activeY;
+					// });
+
+					  auto it = std::find_if(points.begin(), points.end(),
+        [&](const Point& p) {return  p.x == activeX && p.y == activeY;});
+				  
+				it->z = y;
+
+				if (it != points.end())
+				{
+					it->z = y;
+          redraw(y);
 					  return true;
-					}
+				} 
+				  // if (activeX >= 0 && !has_projection_point)  // ..отображается вспомогательная вертикаль (erfpfntkm)
+					// {   
+            // points_2.push_back({activeX, y}); 
+					  // redraw(y);
+					  // return true;
+					// }
 				}
 			}
 		}
@@ -138,27 +193,59 @@ int main(int argc, char* argv[])
 			QMouseEvent* me = static_cast<QMouseEvent*>(e);
 			QPointF cursorPos = me->pos();
       bool found = false;
-			
-			for (const auto& pt : points) 
-			{
-				double dx = cursorPos.x() - pt.x;
-				double dy = cursorPos.y() - pt.y;
-				double dist = std::sqrt(dx*dx + dy*dy);
-				bool found = false;
+
+				// bool found = false;
 
 				for (const auto& pt : points) {
-					if (std::abs(cursorPos.x() - pt.x) <= HOVER_TOLERANCE) {
+// double dx = cursorPos.x() - pt.x;
+				// double dy = cursorPos.y() - pt.y;
+				// double dist = std::sqrt(dx*dx + dy*dy);
+
+					if (std::abs(cursorPos.x() - pt.x) <= EPS) {
 						activeX = pt.x;
+						activeY = pt.y;
+
+						// QToolTip::showText(me->globalPos(), "hint", panel);   // работает с задержкой
+
 						found = true;
 						break;
 					}
 				}
 
-				if (!found)
+				if (!found) {
 					activeX = -1.0;
-
+					// QToolTip::hideText();
+				}
+					
 				redraw(cursorPos.y());
-			}
+
+			
+			// for (const auto& pt : points) 
+			// {
+			// 	double dx = cursorPos.x() - pt.x;
+			// 	double dy = cursorPos.y() - pt.y;
+			// 	double dist = std::sqrt(dx*dx + dy*dy);
+			// 	bool found = false;
+
+			// 	for (const auto& pt : points) {
+			// 		if (std::abs(cursorPos.x() - pt.x) <= EPS) {
+			// 			activeX = pt.x;
+			// 			activeY = pt.y;
+
+			// 			// QToolTip::showText(me->globalPos(), "hint", panel);   // работает с задержкой
+
+			// 			found = true;
+			// 			break;
+			// 		}
+			// 	}
+
+			// 	if (!found) {
+			// 		activeX = -1.0;
+			// 		// QToolTip::hideText();
+			// 	}
+					
+			// 	redraw(cursorPos.y());
+			// }
 			return false;
 		}
 
@@ -166,6 +253,7 @@ int main(int argc, char* argv[])
 		else if (e->type() == QEvent::Leave) 
 		{
 			activeX = -1.0;
+			// QToolTip::hideText();
       redraw();
 			return false;
 		}
