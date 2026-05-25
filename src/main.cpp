@@ -9,9 +9,16 @@
 #include <vector>
 #include <cmath>
 #include <QString>
+#include <QDebug>
 
-struct Point {
-	double x; double y; };
+struct Point { 
+	double x {-1.0};
+	double y {-1.0}; 
+	double z {-1.0}; 
+	// bool is_set {false};
+};
+
+bool point_set_mode = false;  // иструмент ТОЧКА
 
 // ..передача событий в лямбду
 class EventRouter : public QObject {
@@ -23,8 +30,9 @@ public:
 	}
 };
 
-// =======================================================
-int main(int argc, char* argv[]) {
+//=========================================================
+int main(int argc, char* argv[]) 
+{
 	QApplication app(argc, argv);
 
 	// -- Иниц-ция диалогового окна --
@@ -50,12 +58,15 @@ int main(int argc, char* argv[]) {
 	panel->setPixmap(pixmap);
 
 	// -------------------------------------- ЭПЮР
-	const int DIVIDER_Y = window_y_max / 2;  // y-координата горизонтального разделителя
-	const double HOVER_TOLERANCE = 10.0;  // допуск по X для привязки к точке, пиксели
-	std::vector<Point> points;  // массив точек (план: верхняя зона)
-	double activeX = -1.0;  // текущая активная абсцисса для линии связи
+	const int DIVIDER_Y {window_y_max / 2};  // y-координата горизонтального разделителя
+	constexpr double EPS {5.0};  // 1e-9 // допуск по X для привязки к точке, пиксели
+	double activeX {-1.0};  // текущая активная абсцисса для линии связи
+	double activeY {-1.0};
 
-	auto redraw = [&](double y=0.0) 
+	std::vector<Point> points;  // массив точек (верхняя зона)
+	std::vector<Point> points_2;
+
+	auto redraw = [&](double y = 0.0) 
 	{
 		QPainter p(&pixmap);
 		p.setRenderHint(QPainter::Antialiasing);
@@ -64,32 +75,46 @@ int main(int argc, char* argv[]) {
 		// -- Ось проекций --
 		p.setPen(QPen(Qt::black, 2));
 		p.drawLine(0, DIVIDER_Y, pixmap.width(), DIVIDER_Y);
-		p.drawText(10, DIVIDER_Y - 10, "ПЛАН (вид сверху)");
-		p.drawText(10, DIVIDER_Y + 20, "ФРОНТАЛЬ (вид спереди)");
+		p.drawText(10, DIVIDER_Y - 10, "П2 (фронт)");
+		p.drawText(10, DIVIDER_Y + 20, "П1 (план)");
 		
-		// -- Точки на "плане" --
-		p.setPen(Qt::NoPen);
-		p.setBrush(QBrush(Qt::blue));
-		for (const auto& pt : points) {
+		// -- Отрисовка точек на видах --
+		for (const auto& pt : points) 
+		{
+			p.setPen(Qt::NoPen);
+			p.setBrush(QBrush(Qt::blue));
 			p.drawEllipse(QPointF(pt.x, pt.y), 4, 4);
+
+			if (pt.z != -1.0)
+			{
+				p.setBrush(QBrush(Qt::green));
+        p.drawEllipse(QPointF(pt.x, pt.z), 4, 4);
+				
+				p.setPen(QPen(Qt::green, 2, Qt::DashLine));
+				p.drawLine(QPointF(pt.x, DIVIDER_Y), QPointF(pt.x, pt.z));
+
+				p.setPen(QPen(Qt::blue, 2, Qt::DashLine));
+				p.drawLine(QPointF(pt.x, pt.y), QPointF(pt.x, DIVIDER_Y));
+			}
 		}
-		
-		// -- Вертикальная направляющая (область фронтали) --
-		if (activeX >= 0 && y > DIVIDER_Y) {
-			p.setPen(QPen(Qt::gray, 2, Qt::DashLine));
-			p.drawLine(activeX, 0, activeX, pixmap.height());
+
+		// -- режим установки точки  ПРИВЯЗКА выравнивание
+		p.setPen(Qt::NoPen);
+		if (activeX >= 0) 
+		{
 			p.setPen(Qt::black);
-			// p.drawText(activeX + 5, DIVIDER_Y - 5, QString("X = %1").arg(activeX, 0, 'f', 0));
+      p.drawEllipse(QPointF(activeX, y), 3, 3);
+			p.setPen(Qt::NoPen);
 		}
-		
+
 		panel->setPixmap(pixmap);
 	};
 
 	redraw();  // отрисовка
+	qDebug() << "Укажите проекцию на П2 (вид спереди)";
 	
 	// -------------------------------------- СОБЫТИЯ
 	EventRouter router;
-	const double HOVER_RADIUS = 5.0;
 
 	router.handler = [&](QEvent* e) 
 	{
@@ -98,51 +123,76 @@ int main(int argc, char* argv[]) {
 		{
 			QMouseEvent* me = static_cast<QMouseEvent*>(e);
 			
-			if (me->button() == Qt::LeftButton && me->y() <= DIVIDER_Y)  
+			if (me->button() == Qt::LeftButton)
 			{
-				double x = static_cast<double>(me->x());
-				double y = static_cast<double>(me->y());
-				points.push_back({x, y});  // локализация точек
-				redraw(y);
-				return true;
+				double mause_x = static_cast<double>(me->x());
+				double mause_y = static_cast<double>(me->y());
+
+				if (me->y() <= DIVIDER_Y  &&  !point_set_mode)  // вид спереди
+				{
+					points.push_back({mause_x, mause_y});  
+					point_set_mode = true;
+          qDebug() << "Укажите проекцию на П1 (вид сверху)";
+					redraw(mause_y);
+					return true;
+				}
+				
+				if ( me->y() > DIVIDER_Y  &&  point_set_mode) // П1, вид сверху
+				{
+				  auto it = std::find_if(points.begin(), points.end(), 
+					  [&](const Point& p) {return  p.x == activeX && p.y == activeY;});
+
+					if (it != points.end())
+					{
+						it->z = mause_y;
+						
+						// qDebug() << "== задана точка";
+						
+						point_set_mode = false;
+						redraw(mause_y);
+
+            qDebug() << "Укажите проекцию на П2 (вид спереди)";
+
+						activeX = activeY = -1;
+						return true;
+					} 
+				}
 			}
 		}
+
 		// -- Наведение на установленную точку --
-		else if (e->type() == QEvent::MouseMove) {
+		else if (e->type() == QEvent::MouseMove) 
+		{
 			QMouseEvent* me = static_cast<QMouseEvent*>(e);
 			QPointF cursorPos = me->pos();
-      bool found = false;
-			for (const auto& pt : points) 
+
+			if (point_set_mode)
 			{
-				double dx = cursorPos.x() - pt.x;
-				double dy = cursorPos.y() - pt.y;
-				double dist = std::sqrt(dx*dx + dy*dy);
-				bool found = false;
-				for (const auto& pt : points) {
-					if (std::abs(cursorPos.x() - pt.x) <= HOVER_TOLERANCE) {
-						activeX = pt.x;
-						// QString hint = QString("P: X=%1, Y=%2")
-						// 	.arg(pt.x, 0, 'f', 1)
-						// 	.arg(pt.y, 0, 'f', 1);
-						// QToolTip::showText(me->globalPos(), hint, panel);
-						found = true;
-						break;
-					}
+        Point last_point =  points[points.size() - 1];   // ПОЧЕМУ c итератором не работает??
+			
+				if (
+					 std::abs(cursorPos.x() - last_point.x) <= EPS  && 
+					cursorPos.y() >= DIVIDER_Y
+				)
+				{
+					activeX = last_point.x;
+			 		activeY = last_point.y;
 				}
-				if (!found) {
+				else
+				{
 					activeX = -1.0;
-					// QToolTip::hideText();
 				}
-				redraw(cursorPos.y());
 			}
-			// QToolTip::hideText();  // ..точка не найдена
+			
+			redraw(cursorPos.y());
 			return false;
 		}
+
 		// -- Выход за пределы панели -- 
-		else if (e->type() == QEvent::Leave) {
-			activeX = -1.0;
+		else if (e->type() == QEvent::Leave) 
+		{
+			activeX = activeY = -1.0;
       redraw();
-			// QToolTip::hideText();
 			return false;
 		}
 		return false;
