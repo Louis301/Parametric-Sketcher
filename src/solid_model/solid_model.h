@@ -1,3 +1,3 @@
 #pragma once
 
-int c_main(int, char*);
+int c_main();
