@@ -210,6 +210,8 @@
 
 
 #include "solid_model/solid_model.h"
-int main() {
-	return c_main();
+int main(int argc, char* argv[]) 
+{
+	return c_main(argc, argv);
+	return 0;
 }
