@@ -24,6 +24,46 @@
 #include <QByteArray>
 
 
+//------------------------------------------------------------ градиент, свет
+void drawModel(std::vector<float> &vertices) {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	// Диметрическая проекция
+	float rotY = 0.0f;
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRotatef(35.264f, 1.0f, 0.0f, 0.0f);
+	glRotatef(45.0f + rotY, 0.0f, 1.0f, 0.0f);
+	rotY += 0.25f; // Плавное вращение для обзора
+
+	glShadeModel(GL_FLAT); // тип шейдера
+	
+	// min/max Y
+	float minY = vertices[1], maxY = vertices[1];
+	for (size_t i = 1; i < vertices.size(); i += 3) {
+		if (vertices[i] < minY) minY = vertices[i];
+		if (vertices[i] > maxY) maxY = vertices[i];
+	}
+	float rangeY = maxY - minY;
+	if (rangeY < 0.001f) rangeY = 1.0f;
+	
+	// отрисовка
+	glBegin(GL_TRIANGLES);
+	for (size_t i = 0; i < vertices.size(); i += 9) {
+		float avgY = (vertices[i+1] + vertices[i+4] + vertices[i+7]) / 3.0f;
+		float t = (avgY - minY) / rangeY;
+		glColor3f(t, 1.0f - fabs(t - 0.5f) * 2.0f, 1.0f - t);
+		for (int v = 0; v < 3; ++v) {
+			glVertex3f(vertices[i + v*3], vertices[i + v*3 + 1], vertices[i + v*3 + 2]);
+		}
+	}
+	glEnd();
+	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+
+
+
 //------------------------------------------------------------ парсер бинарных STL
 std::vector<float> parseSTL(const QString& filePath) {
     std::vector<float> vertices;
@@ -146,7 +186,7 @@ int c_main(int argc, char* argv[]) {
 
     QApplication app(argc, argv);
 
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  возврат вертексов
     // 2. Парсинг ASCII STL (упрощённый, но достаточный для демо)
     QString stl_path = getAssetPath("base_wall_mount_vc.stl");
     std::vector<float> vertices = parseSTL(stl_path);
@@ -155,9 +195,10 @@ int c_main(int argc, char* argv[]) {
         qWarning() << "[Error] No vertices found in STL.";
         return 1;
     }
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    
+  
 
-    // 3. Создание GUI
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 3. Создание GUI
     QWidget window;
     window.setWindowTitle("STL Viewer (Dimetric Projection)");
     window.resize(800, 600);
@@ -181,46 +222,38 @@ int c_main(int argc, char* argv[]) {
 
     // 5. Ручной цикл рендера (чтобы избежать лямбд/slots и строго соблюсти условие)
     int lastW = 0, lastH = 0;
-    float rotY = 0.0f;
+    
     bool running = true;
 
     while (running) {
-        app.processEvents(); // Обработка событий Qt (закрытие окна, ввод и т.д.)
-        if (window.isHidden()) break;
+			app.processEvents(); // Обработка событий Qt (закрытие окна, ввод и т.д.)
+			if (window.isHidden()) break;
 
-        glWidget.makeCurrent();
-        int w = glWidget.width();
-        int h = glWidget.height();
+			glWidget.makeCurrent();
+			int w = glWidget.width();
+			int h = glWidget.height();
 
-        // Обновление viewport и проекции при изменении размера окна
-        if (w != lastW || h != lastH) {
-            glViewport(0, 0, w, h);
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            float aspect = static_cast<float>(w) / h;
-            float size = 100.0f;
-            glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
-            lastW = w; lastH = h;
-        }
+			// Обновление viewport и проекции при изменении размера окна
+			if (w != lastW || h != lastH) {
+				glViewport(0, 0, w, h);
+				glMatrixMode(GL_PROJECTION);
+				glLoadIdentity();
+				float aspect = static_cast<float>(w) / h;
+				float size = 100.0f;
+				glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
+				lastW = w; lastH = h;
+			}
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Диметрическая проекция: наклон ~35.264° по X, поворот 45° по Y
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glRotatef(35.264f, 1.0f, 0.0f, 0.0f);
-        glRotatef(45.0f + rotY, 0.0f, 1.0f, 0.0f);
-        rotY += 0.25f; // Плавное вращение для обзора
 
-        // Отрисовка треугольников
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(3, GL_FLOAT, 0, vertices.data());
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size() / 3));
-        glDisableClientState(GL_VERTEX_ARRAY);
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+      drawModel(vertices);
+					
+			glWidget.context()->swapBuffers(glWidget.context()->surface());
+			usleep(16000); // ~60 FPS
+		}
 
-        glWidget.context()->swapBuffers(glWidget.context()->surface());
-        usleep(16000); // ~60 FPS
-    }
+    
 
-    return 0;
+	return 0;
 }
