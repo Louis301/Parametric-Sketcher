@@ -23,6 +23,10 @@
 #include <QDataStream>
 #include <QByteArray>
 #include <QWheelEvent>
+#include <QQuaternion>
+#include <QVector3D>
+#include <QKeyEvent>
+#include <QtMath>
 
 
 struct Vec3 { float x, y, z; };
@@ -150,8 +154,14 @@ protected:
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glRotatef(rotX, 1.0f, 0.0f, 0.0f);
-    glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+		
+    // (Arcball)
+		float angle;
+		QVector3D axis;
+		arcballRotation.getAxisAndAngle(&axis, &angle);
+		glRotatef(angle, axis.x(), axis.y(), axis.z());
+
+		// Диметрическая проекция
     glRotatef(35.264f, 1.0f, 0.0f, 0.0f);
     glRotatef(45.0f,   0.0f, 1.0f, 0.0f);
 
@@ -168,19 +178,31 @@ protected:
 
 	void mousePressEvent(QMouseEvent *event) override {
 		if (event->button() == Qt::LeftButton) {
-			lastPos = event->pos();
+			lastMousePos = event->pos();
+			lastPointOnSphere = mapToSphere(event->pos());
 			isRotating = true;
 		}
 	}
 
 	void mouseMoveEvent(QMouseEvent *event) override {
 		if (isRotating && (event->buttons() & Qt::LeftButton)) {
-			QPoint delta = event->pos() - lastPos;
-			const float sensitivity = 0.5f;
-			rotY += delta.x() * sensitivity;
-			rotX += delta.y() * sensitivity;
-			lastPos = event->pos();
-			update(); // перерисовать кадр
+			QVector3D currentPoint = mapToSphere(event->pos());
+
+			// Кватернион вращения между двумя точками на сфере
+			// q = (v1 × v2, v1 · v2)
+			QVector3D axis = QVector3D::crossProduct(lastPointOnSphere, currentPoint);
+			float dot = QVector3D::dotProduct(lastPointOnSphere, currentPoint);
+
+			// Если точки близки — не вращаем
+			if (axis.lengthSquared() > 1e-6f) {
+				QQuaternion deltaQ = QQuaternion::fromAxisAndAngle(axis.normalized(), qRadiansToDegrees(acosf(dot)));
+				// Накапливаем вращение: новое применяется ПЕРЕД текущим
+				arcballRotation = deltaQ * arcballRotation;
+				update();
+			}
+
+			lastPointOnSphere = currentPoint;
+			lastMousePos = event->pos();
 		}
 	}
 
@@ -188,21 +210,45 @@ protected:
 		if (event->button() == Qt::LeftButton) {
 			isRotating = false;
 		}
-	}
+  }
 
 	void mouseDoubleClickEvent(QMouseEvent *event) override {
 		if (event->button() == Qt::LeftButton) {
-			rotX = 0.0f;
-			rotY = 0.0f;
+			arcballRotation = QQuaternion();
 			zoom = 5.0f;
 			update();
-		}
+    }
 	}
 
 private:
-	void drawModel() {
-		if (vertices.empty()) return;
+  // Проекция 2D-координат мыши на единичную сферу
+	QVector3D mapToSphere(const QPoint& p) {
+		// Нормируем координаты в диапазон [-1, 1]
+		float x = (2.0f * p.x() - width())  / width();
+		float y = (height() - 2.0f * p.y()) / height();  // Y инвертирован
+		float r2 = x * x + y * y;
+		float z;
 
+		if (r2 <= 0.5f) {
+			z = sqrtf(1.0f - r2);  // внутри сферы — обычная проекция
+		} else {
+			z = 0.5f / sqrtf(r2);  // снаружи — гиперболический лист (чтобы избежать разрывов)
+		}
+		return QVector3D(x, y, z).normalized();
+	}
+
+	// Применение дельты углов Эйлера к кватерниону (для клавиатуры)
+	void applyEulerDelta(float dx, float dy, float dz) {
+		QQuaternion qx = QQuaternion::fromAxisAndAngle(1, 0, 0, dx);
+		QQuaternion qy = QQuaternion::fromAxisAndAngle(0, 1, 0, dy);
+		QQuaternion qz = QQuaternion::fromAxisAndAngle(0, 0, 1, dz);
+		arcballRotation = qx * qy * qz * arcballRotation;
+	}
+
+
+	void drawModel() {
+		if (vertices.empty()) 
+		  return;
 		// Поиск min/max Y для градиента
 		float minY = vertices[1], maxY = vertices[1];
 		for (size_t i = 1; i < vertices.size(); i += 3) {
@@ -211,7 +257,7 @@ private:
 		}
 		float rangeY = maxY - minY;
 		if (rangeY < 0.001f) rangeY = 1.0f;
-
+    // Отрисовка простая
 		glBegin(GL_TRIANGLES);
 		for (size_t i = 0; i < vertices.size(); i += 9) {
 			float avgY = (vertices[i+1] + vertices[i+4] + vertices[i+7]) / 3.0f;
@@ -225,19 +271,52 @@ private:
 		glEnd();
 	}
 
+	// --------------------------------------------------------- Клавиатурное управление
+	void keyPressEvent(QKeyEvent *event) override {
+		const float rotStep = 5.0f;
+		const float zoomStep = 1.1f;
+
+		switch (event->key()) {
+		case Qt::Key_Left:  applyEulerDelta(0, -rotStep, 0); break;
+		case Qt::Key_Right: applyEulerDelta(0,  rotStep, 0); break;
+		case Qt::Key_Up:    applyEulerDelta(-rotStep, 0, 0); break;
+		case Qt::Key_Down:  applyEulerDelta( rotStep, 0, 0); break;
+		case Qt::Key_Plus:
+		case Qt::Key_Equal:
+			zoom *= zoomStep;
+			if (zoom > 50.0f) zoom = 50.0f;
+			break;
+		case Qt::Key_Minus:
+			zoom /= zoomStep;
+			if (zoom < 0.1f) zoom = 0.1f;
+			break;
+		case Qt::Key_Home:
+			arcballRotation = QQuaternion();  // единичный кватернион
+			zoom = 5.0f;
+			break;
+		default:
+			QOpenGLWidget::keyPressEvent(event);
+			return;
+		}
+		update();
+	}
+
+  //-------------------------------------------------------
 	std::vector<float> vertices;
 	float zoom = 5.0f;
 	const float baseSize = 100.0f;
 
 	// Параметры вращения
-	float rotX = 0.0f;   // угол вокруг оси X (наклон вверх-вниз)
-	float rotY = 0.0f;   // угол вокруг оси Y (поворот влево-вправо)
-	QPoint lastPos;      // предыдущая позиция курсора
+	float rotX = 0.0f;
+	float rotY = 0.0f;
+	
+	QQuaternion arcballRotation;
+	QVector3D lastPointOnSphere;
+	QPoint lastMousePos;
 	bool isRotating = false;
 };
 
-
-//========================================================================= ТОЧКА ВХОДА
+//============================================================= ТОЧКА ВХОДА
 int c_main(int argc, char* argv[]) {
 	QSurfaceFormat fmt;
 	fmt.setVersion(2, 1);
@@ -247,7 +326,7 @@ int c_main(int argc, char* argv[]) {
 
 	QApplication app(argc, argv);
 
-	QString stl_path = getAssetPath("base_wall_mount_vc.stl");
+	QString stl_path = getAssetPath("insert_wall_mount_vc.stl");
 	std::vector<float> vertices;
 	parseSTL(stl_path, vertices);
 	if (vertices.empty()) {
@@ -262,8 +341,8 @@ int c_main(int argc, char* argv[]) {
 	QVBoxLayout layout(&window);
 	layout.setContentsMargins(0, 0, 0, 0);
 	
-	GLWidget glWidget; // Используем наш ООП-класс
-	glWidget.setVertices(vertices); // Передаем данные
+	GLWidget glWidget;
+	glWidget.setVertices(vertices);
 	layout.addWidget(&glWidget);
 	window.show();
 
