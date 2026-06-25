@@ -117,145 +117,155 @@ QString getAssetPath(const QString& filename) {
 }
 
 
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  ООП реализация
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  ООП реализация
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
 public:
-    explicit GLWidget(QWidget *parent = nullptr) : QOpenGLWidget(parent) {
-        // Устанавливаем фокус, чтобы виджет мог принимать события клавиатуры/мыши
-        setFocusPolicy(Qt::StrongFocus); 
-    }
+	explicit GLWidget(QWidget *parent = nullptr) : QOpenGLWidget(parent) {
+		setFocusPolicy(Qt::StrongFocus); 
+	}
 
-    // Метод для передачи данных извне (например, после парсинга STL)
-    void setVertices(const std::vector<float>& verts) {
-        vertices = verts;
-    }
+	void setVertices(const std::vector<float>& verts) {
+		vertices = verts;
+	}
 
 protected:
-    // ---------------------------------------------------------
-    // 1. Инициализация (вызывается 1 раз)
-    // ---------------------------------------------------------
-    void initializeGL() override {
-        initializeOpenGLFunctions(); // Инициализация QOpenGLFunctions
-        
-        glClearColor(0.12f, 0.12f, 0.18f, 1.0f);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glShadeModel(GL_FLAT);
-    }
+	void initializeGL() override {
+		initializeOpenGLFunctions();
+		glClearColor(0.12f, 0.12f, 0.18f, 1.0f);
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glShadeModel(GL_FLAT);
+	}
 
-    // ---------------------------------------------------------
-    // 2. Отрисовка кадра (вызывается при update() и resize)
-    // ---------------------------------------------------------
-    void paintGL() override {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	void paintGL() override {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		
+		int w = width();
+		int h = height();
+		float aspect = (h == 0) ? 1.0f : static_cast<float>(w) / h;
+		float size = baseSize / zoom; 
+		glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
 
-        // --- Настройка проекции (с учетом Zoom) ---
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        
-        int w = width();
-        int h = height();
-        float aspect = (h == 0) ? 1.0f : static_cast<float>(w) / h;
-        float size = baseSize / zoom; 
-        glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glRotatef(rotX, 1.0f, 0.0f, 0.0f);
+    glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+    glRotatef(35.264f, 1.0f, 0.0f, 0.0f);
+    glRotatef(45.0f,   0.0f, 1.0f, 0.0f);
 
-        // --- Настройка вида (Диметрическая проекция) ---
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glRotatef(35.264f, 1.0f, 0.0f, 0.0f);
-        glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+		drawModel();
+	}
 
-        // --- Отрисовка модели ---
-        drawModel();
-    }
+	void wheelEvent(QWheelEvent *event) override {
+		float delta = event->angleDelta().y() / 120.0f;
+		zoom *= (1.0f + delta * 0.1f);
+		if (zoom < 0.1f) zoom = 0.1f;
+		if (zoom > 10.0f) zoom = 10.0f;
+		update(); 
+	}
 
-    // ---------------------------------------------------------
-    // 3. Обработчик колёсика мыши (Нативный ООП-подход)
-    // ---------------------------------------------------------
-    void wheelEvent(QWheelEvent *event) override {
-        float delta = event->angleDelta().y() / 120.0f;
-        zoom *= (1.0f + delta * 0.1f);
-        
-        // Ограничиваем зум
-        if (zoom < 0.1f) zoom = 0.1f;
-        if (zoom > 10.0f) zoom = 10.0f;
-        
-        // Запрашиваем перерисовку виджета
-        update(); 
-    }
+	void mousePressEvent(QMouseEvent *event) override {
+		if (event->button() == Qt::LeftButton) {
+			lastPos = event->pos();
+			isRotating = true;
+		}
+	}
+
+	void mouseMoveEvent(QMouseEvent *event) override {
+		if (isRotating && (event->buttons() & Qt::LeftButton)) {
+			QPoint delta = event->pos() - lastPos;
+			const float sensitivity = 0.5f;
+			rotY += delta.x() * sensitivity;
+			rotX += delta.y() * sensitivity;
+			lastPos = event->pos();
+			update(); // перерисовать кадр
+		}
+	}
+
+	void mouseReleaseEvent(QMouseEvent *event) override {
+		if (event->button() == Qt::LeftButton) {
+			isRotating = false;
+		}
+	}
+
+	void mouseDoubleClickEvent(QMouseEvent *event) override {
+		if (event->button() == Qt::LeftButton) {
+			rotX = 0.0f;
+			rotY = 0.0f;
+			zoom = 5.0f;
+			update();
+		}
+	}
 
 private:
-    // Ваша функция отрисовки, адаптированная под метод класса
-    void drawModel() {
-        if (vertices.empty()) return;
+	void drawModel() {
+		if (vertices.empty()) return;
 
-        // Поиск min/max Y для градиента
-        float minY = vertices[1], maxY = vertices[1];
-        for (size_t i = 1; i < vertices.size(); i += 3) {
-            if (vertices[i] < minY) minY = vertices[i];
-            if (vertices[i] > maxY) maxY = vertices[i];
-        }
-        float rangeY = maxY - minY;
-        if (rangeY < 0.001f) rangeY = 1.0f;
+		// Поиск min/max Y для градиента
+		float minY = vertices[1], maxY = vertices[1];
+		for (size_t i = 1; i < vertices.size(); i += 3) {
+			if (vertices[i] < minY) minY = vertices[i];
+			if (vertices[i] > maxY) maxY = vertices[i];
+		}
+		float rangeY = maxY - minY;
+		if (rangeY < 0.001f) rangeY = 1.0f;
 
-        glBegin(GL_TRIANGLES);
-        for (size_t i = 0; i < vertices.size(); i += 9) {
-            float avgY = (vertices[i+1] + vertices[i+4] + vertices[i+7]) / 3.0f;
-            float t = (avgY - minY) / rangeY;
-            glColor3f(t, 1.0f - fabs(t - 0.5f) * 2.0f, 1.0f - t);
-            
-            for (int v = 0; v < 3; ++v) {
-                glVertex3f(vertices[i + v*3], vertices[i + v*3 + 1], vertices[i + v*3 + 2]);
-            }
-        }
-        glEnd();
-    }
+		glBegin(GL_TRIANGLES);
+		for (size_t i = 0; i < vertices.size(); i += 9) {
+			float avgY = (vertices[i+1] + vertices[i+4] + vertices[i+7]) / 3.0f;
+			float t = (avgY - minY) / rangeY;
+			glColor3f(t, 1.0f - fabs(t - 0.5f) * 2.0f, 1.0f - t);
+			
+			for (int v = 0; v < 3; ++v) {
+				glVertex3f(vertices[i + v*3], vertices[i + v*3 + 1], vertices[i + v*3 + 2]);
+			}
+		}
+		glEnd();
+	}
 
-    std::vector<float> vertices;
-    float zoom = 5.0f;
-    const float baseSize = 100.0f;
+	std::vector<float> vertices;
+	float zoom = 5.0f;
+	const float baseSize = 100.0f;
+
+	// Параметры вращения
+	float rotX = 0.0f;   // угол вокруг оси X (наклон вверх-вниз)
+	float rotY = 0.0f;   // угол вокруг оси Y (поворот влево-вправо)
+	QPoint lastPos;      // предыдущая позиция курсора
+	bool isRotating = false;
 };
 
 
-
-
-
-
-//========================================================================== ТОЧКА ВХОДА
+//========================================================================= ТОЧКА ВХОДА
 int c_main(int argc, char* argv[]) {
-    // 1. Настройка формата OpenGL (для legacy-функций)
-    QSurfaceFormat fmt;
-    fmt.setVersion(2, 1);
-    fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
-    fmt.setDepthBufferSize(24);
-    QSurfaceFormat::setDefaultFormat(fmt);
+	QSurfaceFormat fmt;
+	fmt.setVersion(2, 1);
+	fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
+	fmt.setDepthBufferSize(24);
+	QSurfaceFormat::setDefaultFormat(fmt);
 
-    QApplication app(argc, argv);
+	QApplication app(argc, argv);
 
-    // 2. Парсинг STL (ваш существующий код)
-    QString stl_path = getAssetPath("base_wall_mount_vc.stl");
-    std::vector<float> vertices;
-    parseSTL(stl_path, vertices);
-    if (vertices.empty()) {
-        qWarning() << "[Error] No vertices found in STL.";
-        return 1;
-    }
+	QString stl_path = getAssetPath("base_wall_mount_vc.stl");
+	std::vector<float> vertices;
+	parseSTL(stl_path, vertices);
+	if (vertices.empty()) {
+		qWarning() << "[Error] No vertices found in STL.";
+		return 1;
+	}
 
-    // 3. Создание GUI
-    QWidget window;
-    window.setWindowTitle("STL Viewer (Dimetric Projection)");
-    window.resize(800, 600);
-    
-    QVBoxLayout layout(&window);
-    layout.setContentsMargins(0, 0, 0, 0);
-    
-    GLWidget glWidget; // Используем наш ООП-класс
-    glWidget.setVertices(vertices); // Передаем данные
-    layout.addWidget(&glWidget);
-    
-    window.show();
+	QWidget window;
+	window.setWindowTitle("STL Viewer (Dimetric Projection)");
+	window.resize(800, 600);
+	
+	QVBoxLayout layout(&window);
+	layout.setContentsMargins(0, 0, 0, 0);
+	
+	GLWidget glWidget; // Используем наш ООП-класс
+	glWidget.setVertices(vertices); // Передаем данные
+	layout.addWidget(&glWidget);
+	window.show();
 
-    // 4. Запуск стандартного event-loop Qt
-    // Больше никаких while, usleep и swapBuffers!
-    return app.exec(); 
+	return app.exec(); 
 }
