@@ -40,6 +40,7 @@ class WheelEventFilter : public QObject {
 				Zoom *= (1.0f + delta * 0.1f);    // Zoom - глобальная переменная
 				if (Zoom < 0.1f) Zoom = 0.1f;
 				if (Zoom > 10.0f) Zoom = 10.0f;
+				
 				return true;
 			}
 			return QObject::eventFilter(obj, event);
@@ -61,9 +62,9 @@ void drawModel(std::vector<float> &vertices) {
 	glRotatef(45.0f + rotY, 0.0f, 1.0f, 0.0f);
 	rotY += 0.25f; // Плавное вращение для обзора  ЗАЧЕМ??
 
-  // приближение камеры
-	float size = baseSize / Zoom;
-	glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
+  // // приближение камеры
+	// float size = baseSize / Zoom;
+	// glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
 
 	// тип шейдера
 	glShadeModel(GL_FLAT  ); 
@@ -77,7 +78,7 @@ void drawModel(std::vector<float> &vertices) {
 	float rangeY = maxY - minY;
 	if (rangeY < 0.001f) rangeY = 1.0f;
 	
-	// отрисовка модели с градиентом
+	// отрисовка модели с градиентомa
 	glBegin(GL_TRIANGLES);
 	for (size_t i = 0; i < vertices.size(); i += 9) {
 		float avgY = (vertices[i+1] + vertices[i+4] + vertices[i+7]) / 3.0f;
@@ -243,8 +244,17 @@ int c_main(int argc, char* argv[]) {
 
 		// Обновление проекции
 		glViewport(0, 0, w, h);
-		aspect = static_cast<float>(w) / h;
-		drawModel(vertices);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+    aspect = static_cast<float>(w) / h;
+    float size = baseSize / Zoom;
+    glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
+    // -----------------------------------------
+
+    // Отрисовка модели
+    glMatrixMode(GL_MODELVIEW);
+    drawModel(vertices);
 				
 		glWidget.context()->swapBuffers(glWidget.context()->surface());
 		usleep(16000); // ~60 FPS
