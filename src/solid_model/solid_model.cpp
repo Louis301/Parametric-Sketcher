@@ -23,13 +23,36 @@
 #include <QDataStream>
 #include <QByteArray>
 
-
 struct Vec3 { float x, y, z; };
+float Zoom {5.0};
+float aspect{};
+const float baseSize = 100.0f;
+
+//------------------------------------------------------------ обработчик зума
+#include <QWheelEvent>
+
+class WheelEventFilter : public QObject {
+  protected:
+    bool eventFilter(QObject* obj, QEvent* event) override {
+      if (event->type() == QEvent::Wheel) {
+				QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+				float delta = wheelEvent->angleDelta().y() / 120.0f;
+				Zoom *= (1.0f + delta * 0.1f);    // Zoom - глобальная переменная
+				if (Zoom < 0.1f) Zoom = 0.1f;
+				if (Zoom > 10.0f) Zoom = 10.0f;
+				
+				return true;
+			}
+			return QObject::eventFilter(obj, event);
+    }
+};
 
 
 //------------------------------------------------------------ градиент, свет
 void drawModel(std::vector<float> &vertices) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// qWarning() << Zoom << " | drawModel";
 	
 	// Диметрическая проекция
 	float rotY = 0.0f;
@@ -37,9 +60,14 @@ void drawModel(std::vector<float> &vertices) {
 	glLoadIdentity();
 	glRotatef(35.264f, 1.0f, 0.0f, 0.0f);
 	glRotatef(45.0f + rotY, 0.0f, 1.0f, 0.0f);
-	rotY += 0.25f; // Плавное вращение для обзора
+	rotY += 0.25f; // Плавное вращение для обзора  ЗАЧЕМ??
 
-	glShadeModel(GL_FLAT); // тип шейдера
+  // // приближение камеры
+	// float size = baseSize / Zoom;
+	// glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
+
+	// тип шейдера
+	glShadeModel(GL_FLAT  ); 
 	
 	// min/max Y
 	float minY = vertices[1], maxY = vertices[1];
@@ -50,7 +78,7 @@ void drawModel(std::vector<float> &vertices) {
 	float rangeY = maxY - minY;
 	if (rangeY < 0.001f) rangeY = 1.0f;
 	
-	// отрисовка модели с градиентом
+	// отрисовка модели с градиентомa
 	glBegin(GL_TRIANGLES);
 	for (size_t i = 0; i < vertices.size(); i += 9) {
 		float avgY = (vertices[i+1] + vertices[i+4] + vertices[i+7]) / 3.0f;
@@ -188,6 +216,10 @@ int c_main(int argc, char* argv[]) {
 	glWidget.setAutoFillBackground(false);
 	layout.addWidget(&glWidget);
 
+	// Устанавливаем фильтр событий
+  WheelEventFilter wheelFilter;
+  glWidget.installEventFilter(&wheelFilter);
+
 	window.show();
 	app.processEvents(); // создание OpenGL-контекста
 
@@ -203,25 +235,26 @@ int c_main(int argc, char* argv[]) {
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ОБРАБОКА СОБЫТИЙ
 	while (running) {
-		app.processEvents(); // Обработка событий Qt (закрытие окна, ввод и т.д.)
+		app.processEvents();
 		if (window.isHidden()) break;
 
 		glWidget.makeCurrent();
 		int w = glWidget.width();
 		int h = glWidget.height();
 
-		// Обновление viewport и проекции при изменении размера окна
-		if (w != lastW || h != lastH) {
-			glViewport(0, 0, w, h);
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			float aspect = static_cast<float>(w) / h;
-			float size = 100.0f;
-			glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
-			lastW = w; lastH = h;
-		}
+		// Обновление проекции
+		glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+    aspect = static_cast<float>(w) / h;
+    float size = baseSize / Zoom;
+    glOrtho(-size * aspect, size * aspect, -size, size, -500, 500);
+    // -----------------------------------------
 
-		drawModel(vertices);
+    // Отрисовка модели
+    glMatrixMode(GL_MODELVIEW);
+    drawModel(vertices);
 				
 		glWidget.context()->swapBuffers(glWidget.context()->surface());
 		usleep(16000); // ~60 FPS
