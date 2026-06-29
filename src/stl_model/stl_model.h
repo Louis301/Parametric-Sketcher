@@ -1,3 +1,3 @@
 #pragma once
 
-int c_main(int argc, char* argv[]);
+int a_main(int argc, char* argv[]);

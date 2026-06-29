@@ -394,7 +394,7 @@ private:
 };
 
 //============================================================= ТОЧКА ВХОДА
-int c_main(int argc, char* argv[]) {
+int a_main(int argc, char* argv[]) {
 	QSurfaceFormat fmt;
 	fmt.setVersion(2, 1);
 	fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
@@ -403,7 +403,7 @@ int c_main(int argc, char* argv[]) {
 
 	QApplication app(argc, argv);
 
-	QString stl_path = getAssetPath("insert_wall_mount_vc.stl");
+	QString stl_path = getAssetPath("base_wall_mount_vc.stl");
 	std::vector<float> vertices;
 	parseSTL(stl_path, vertices);
 	if (vertices.empty()) {

@@ -210,10 +210,15 @@
 
 
 
+
 #include "stl_model/stl_model.h"
+// #include "solid_model/solid_model.h"
+
 
 int main(int argc, char* argv[]) 
 {
-	return c_main(argc, argv);
-	return 0;
+	return a_main(argc, argv);
+
+	// return b_main(argc, argv);
+	// return 0;
 }
