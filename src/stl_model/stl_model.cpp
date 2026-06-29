@@ -1,4 +1,4 @@
-#include "solid_model.h"
+#include "stl_model.h"
 
 #include <iostream>
 #include <QApplication>
