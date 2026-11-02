@@ -14,7 +14,7 @@ find_package(OpenGL REQUIRED)
 add_executable(cad_test
     src/main.cpp
     # src/solid_model/solid_model.cpp
-    src/stl_model/stl_model.cpp
+    src/stl_model_view/stl_model.cpp
 )
 
 # Подключаем Qt и OpenGL
