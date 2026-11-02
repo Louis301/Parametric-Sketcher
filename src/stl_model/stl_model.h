@@ -1,3 +1,4 @@
 #pragma once
+#include <QString>
 
-int a_main(int argc, char* argv[]);
+int stl_review(const QString& stl_title, int argc, char* argv[]);

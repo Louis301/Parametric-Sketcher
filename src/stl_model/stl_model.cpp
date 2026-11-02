@@ -393,9 +393,10 @@ private:
 	float modelColor[4] = { 0.35f, 0.60f, 0.90f, 1.0f };
 };
 
-//============================================================= ТОЧКА ВХОДА
-int a_main(int argc, char* argv[]) {
-	QSurfaceFormat fmt;
+// ------------------------------------------------------------------------------
+int stl_review(const QString& stl_title, int argc, char* argv[])
+{
+QSurfaceFormat fmt;
 	fmt.setVersion(2, 1);
 	fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
 	fmt.setDepthBufferSize(24);
@@ -403,7 +404,7 @@ int a_main(int argc, char* argv[]) {
 
 	QApplication app(argc, argv);
 
-	QString stl_path = getAssetPath("base_wall_mount_vc.stl");
+	QString stl_path = getAssetPath(stl_title);
 	std::vector<float> vertices;
 	parseSTL(stl_path, vertices);
 	if (vertices.empty()) {
