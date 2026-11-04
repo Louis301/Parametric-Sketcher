@@ -9,10 +9,6 @@
 #include <unordered_map>
 #include <cmath>
 
-// ============================================================
-// Хеш-функции ДОЛЖНЫ быть объявлены ПЕРЕД использованием
-// ============================================================
-
 // Хеш-функция для Eigen::Vector3d (для сварки вершин)
 struct VectorHash {
     size_t operator()(const Eigen::Vector3d& v) const {
@@ -47,12 +43,6 @@ struct PairHash {
     }
 };
 
-
-
-// ============================================================
-// Структуры данных
-// ============================================================
-
 struct HalfEdge {
     int vertex;      // Конечная вершина
     int face;        // Принадлежащая грань
@@ -70,8 +60,7 @@ struct Vertex {
     int he;          // Один из исходящих half-edges
     double curvature = 0.0;  // Для тепловой карты
     
-    // Vertex() : he(-1), curvature(0.0) {}
-Vertex() : position(Eigen::Vector3d::Zero()), he(-1), curvature(0.0) {}
+    Vertex() : position(Eigen::Vector3d::Zero()), he(-1), curvature(0.0) {}
 };
 
 // ============================================================
@@ -94,6 +83,12 @@ public:
     bool loadFromSTL(const std::string& filename);
     void buildTopology();
     void computeCurvature();
+
+    // Новые поля для камеры    // interaction
+    Eigen::Vector3d center;
+    double radius;
+    // новый метод
+    void computeBoundingBox();
     
 private:
     // Вспомогательные методы

@@ -3,12 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
-// #include "mesh.h"
-// #include <fstream>
-// #include <iostream>
 #include <sstream>
-// #include <cmath>
-// #include <algorithm>
 #include <cstring>
 
 
@@ -222,6 +217,10 @@ bool Mesh::loadFromSTL(const std::string& filename) {
     
     // Сварка вершин и построение топологии
     weldVertices(rawVertices, rawFaces);
+
+        computeBoundingBox();
+    std::cout << "[Info] Bounding box: center=(" << center.x() << ", " << center.y() << ", " << center.z() 
+              << "), radius=" << radius << std::endl;
     
     std::cout << "[Info] After welding: " << V.rows() 
               << " unique vertices, " << F.rows() << " faces" << std::endl;
@@ -426,22 +425,16 @@ void Mesh::computeCurvature() {
         double k1 = H + sqrtD;
         double k2 = H - sqrtD;
         
-
-
-        // vertices[i].curvature = H;  // Используем mean curvature для тепловой карты
-if (!vertices.empty() && static_cast<int>(vertices.size()) == n) {
-        for (int i = 0; i < n; ++i) {
-            // double H = meanCurvature[i];
-            vertices[i].curvature = meanCurvature[i];//(H - minH) / range;
-        }
-        std::cout << "[Info] Curvature mapped to vertices" << std::endl;
-    } else {
-        std::cerr << "[Warning] vertices vector is empty or size mismatch ("
-                  << vertices.size() << " vs " << n 
-                  << "). Call buildTopology() before computeCurvature()." << std::endl;
-        std::cerr << "[Warning] Curvature computed but not mapped to vertices." << std::endl;
-    }
-        
+      if (!vertices.empty() && static_cast<int>(vertices.size()) == n) {
+          for (int i = 0; i < n; ++i) {
+              vertices[i].curvature = meanCurvature[i];//(H - minH) / range;
+          }
+      } else {
+          std::cerr << "[Warning] vertices vector is empty or size mismatch ("
+                    << vertices.size() << " vs " << n 
+                    << "). Call buildTopology() before computeCurvature()." << std::endl;
+          std::cerr << "[Warning] Curvature computed but not mapped to vertices." << std::endl;
+      }
     }
     
     // Нормализация для тепловой карты
@@ -458,5 +451,21 @@ if (!vertices.empty() && static_cast<int>(vertices.size()) == n) {
     std::cout << "[Info] Curvature computed: H ∈ [" << minH << ", " << maxH << "]" << std::endl;
 }
 
-
+// ---------------------------------------------------
+void Mesh::computeBoundingBox() {
+    if (V.rows() == 0) {
+        center = Eigen::Vector3d::Zero();
+        radius = 1.0;
+        return;
+    }
+    // Находим минимальные и максимальные координаты по осям
+    Eigen::Vector3d minBound = V.colwise().minCoeff();
+    Eigen::Vector3d maxBound = V.colwise().maxCoeff();
+    
+    center = (minBound + maxBound) / 2.0;
+    radius = (maxBound - minBound).norm() / 2.0;
+    
+    // Защита от вырожденных моделей
+    if (radius < 1e-6) radius = 1.0;
+}
 
