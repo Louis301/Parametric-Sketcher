@@ -10,10 +10,13 @@ find_package(Qt5 COMPONENTS Core Widgets OpenGL REQUIRED)
 # Находим OpenGL
 find_package(OpenGL REQUIRED)
 
+# Подключаем libigl как подмодуль
+set(LIBIGL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/libigl)
+add_subdirectory(${LIBIGL_DIR} libigl)
+
 # Создаем исполняемый файл
 add_executable(cad_test
     src/main.cpp
-    # src/solid_model/solid_model.cpp
     src/stl_model_view/stl_model.cpp
 )
 
@@ -23,6 +26,8 @@ target_link_libraries(cad_test PRIVATE
     Qt5::Widgets
     Qt5::OpenGL
     ${OPENGL_LIBRARIES}
+    igl::core
+    Eigen3::Eigen
 )
 
 # Определяем макросы
@@ -34,4 +39,7 @@ target_compile_definitions(cad_test PRIVATE
 target_include_directories(cad_test PRIVATE
     ${OPENGL_INCLUDE_DIR}
     src
+    ${LIBIGL_DIR}/include
 )
+
+

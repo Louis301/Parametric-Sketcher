@@ -31,3 +31,10 @@ Thumbs.db
 # Секреты
 *.env
 !*.env.example
+
+# qt
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.moc
+*.qrc.depends
