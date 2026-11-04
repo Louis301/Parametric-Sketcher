@@ -18,6 +18,7 @@ add_subdirectory(${LIBIGL_DIR} libigl)
 add_executable(cad_test
     src/main.cpp
     src/stl_model_view/stl_model.cpp
+    src/mesh/mesh.cpp
 )
 
 # Подключаем Qt и OpenGL
