@@ -8,27 +8,16 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QFile>
-#include <QTextStream>
-#include <QStringList>
-#include <QRegularExpression>
 #include <QSurfaceFormat>
 #include <vector>
 #include <cmath>
-#include <unistd.h>
 #include <QDebug>
-#include <QOpenGLContext>
 #include <QString>
-#include <filesystem>
 #include <QDir>
-#include <GL/gl.h>
 #include <QOpenGLFunctions>
-#include <QDataStream>
-#include <QByteArray>
 #include <QWheelEvent>
 #include <QQuaternion>
 #include <QVector3D>
-#include <QKeyEvent>
-#include <QtMath>
 #include <QMatrix4x4>
 #include <QMouseEvent>
 #include <QProgressBar>
@@ -39,7 +28,6 @@
 #include <QTimer>
 #include <QMessageBox>
 
-//-------------------------------------------------------------------- new
 // --- Конструктор: создание потока и связывание сигналов ---
 GLWidget::GLWidget(QWidget* parent) : QOpenGLWidget(parent) {
     setFocusPolicy(Qt::StrongFocus);
@@ -60,15 +48,9 @@ GLWidget::GLWidget(QWidget* parent) : QOpenGLWidget(parent) {
     connect(m_worker,    &MeshWorker::progress,
             this,        &GLWidget::progress,
             Qt::QueuedConnection);
-    connect(m_worker,    &MeshWorker::failed,
-            this,        [this](const QString& reason){
-                qWarning() << "[Worker] Failed:" << reason;
-            },
-            Qt::QueuedConnection);
-
-                connect(m_worker, &MeshWorker::failed, this, [this](const QString& reason){
+    connect(m_worker, &MeshWorker::failed, this, [this](const QString& reason){
         qWarning() << "[Worker] Failed:" << reason;
-        emit loadFailed(reason); // <-- ДОБАВИТЬ ЭТУ СТРОКУ
+        emit loadFailed(reason);
     }, Qt::QueuedConnection);
 
     m_workerThread.start();
@@ -88,7 +70,6 @@ GLWidget::~GLWidget() {
         doneCurrent();
     }
 }
-
 
 // --- Публичный метод запуска загрузки ---
 void GLWidget::loadAsync(const QString& stlPath) {
@@ -121,7 +102,7 @@ void GLWidget::resizeGL(int w, int h) {
     glViewport(0, 0, w, h);
 }
 
-    // --- Отрисовка ---
+// --- Отрисовка ---
 void GLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if (!m_data || m_indexCount == 0) return;
@@ -136,74 +117,72 @@ void GLWidget::paintGL() {
     m_vao.release();
 }
 
-
 void GLWidget::wheelEvent(QWheelEvent *event)  {
-        float delta = event->angleDelta().y() / 120.0f;
-        zoom *= (1.0f + delta * 0.1f);
-        if (zoom < 0.1f) zoom = 0.1f;
-        if (zoom > 10.0f) zoom = 10.0f;
+    float delta = event->angleDelta().y() / 120.0f;
+    zoom *= (1.0f + delta * 0.1f);
+    if (zoom < 0.1f) zoom = 0.1f;
+    if (zoom > 10.0f) zoom = 10.0f;
+    update();
+}
+
+void GLWidget:: mousePressEvent(QMouseEvent *event)  {
+    if (event->button() == Qt::LeftButton) {
+        lastMousePos = event->pos();
+        lastPointOnSphere = mapToSphere(event->pos());
+        isRotating = true;
+    } else if (event->button() == Qt::RightButton || event->button() == Qt::MiddleButton) {
+        lastMousePos = event->pos();
+        isPanning = true;
+    }
+}
+
+void GLWidget:: mouseMoveEvent(QMouseEvent *event)  {
+    if (isRotating && (event->buttons() & Qt::LeftButton)) {
+        QVector3D currentPoint = mapToSphere(event->pos());
+        QVector3D axis = QVector3D::crossProduct(lastPointOnSphere, currentPoint);
+        float dot = QVector3D::dotProduct(lastPointOnSphere, currentPoint);
+        
+        // Ограничиваем dot диапазоном [-1, 1] для безопасности acos
+        dot = std::max(-1.0f, std::min(1.0f, dot));
+        
+        if (axis.lengthSquared() > 1e-6f) {
+            float angle = std::acos(dot) * 180.0f / 3.14159265358979323846f;
+            QQuaternion deltaQ = QQuaternion::fromAxisAndAngle(axis.normalized(), angle);
+            arcballRotation = deltaQ * arcballRotation;
+            update();
+        }
+        lastPointOnSphere = currentPoint;
+        lastMousePos = event->pos();
+        
+    } else if (isPanning && (event->buttons() & (Qt::RightButton | Qt::MiddleButton))) {
+        QPoint delta = event->pos() - lastMousePos;
+        // Скорость панорамирования зависит от размера модели и зума
+        // float panSpeed = 0.005f * (mesh.radius * 2.0f) / zoom;
+        // panX += delta.x() * panSpeed;
+        // panY -= delta.y() * panSpeed; // Y инвертирован в экранных координатах
+        lastMousePos = event->pos();
         update();
     }
+}
 
-    void GLWidget:: mousePressEvent(QMouseEvent *event)  {
-        if (event->button() == Qt::LeftButton) {
-            lastMousePos = event->pos();
-            lastPointOnSphere = mapToSphere(event->pos());
-            isRotating = true;
-        } else if (event->button() == Qt::RightButton || event->button() == Qt::MiddleButton) {
-            lastMousePos = event->pos();
-            isPanning = true;
-        }
+void GLWidget:: mouseReleaseEvent(QMouseEvent *event)  {
+    if (event->button() == Qt::LeftButton) {
+        isRotating = false;
+    } else if (event->button() == Qt::RightButton || event->button() == Qt::MiddleButton) {
+        isPanning = false;
     }
+}
 
-    void GLWidget:: mouseMoveEvent(QMouseEvent *event)  {
-        if (isRotating && (event->buttons() & Qt::LeftButton)) {
-            QVector3D currentPoint = mapToSphere(event->pos());
-            QVector3D axis = QVector3D::crossProduct(lastPointOnSphere, currentPoint);
-            float dot = QVector3D::dotProduct(lastPointOnSphere, currentPoint);
-            
-            // Ограничиваем dot диапазоном [-1, 1] для безопасности acos
-            dot = std::max(-1.0f, std::min(1.0f, dot));
-            
-            if (axis.lengthSquared() > 1e-6f) {
-                float angle = std::acos(dot) * 180.0f / 3.14159265358979323846f;
-                QQuaternion deltaQ = QQuaternion::fromAxisAndAngle(axis.normalized(), angle);
-                arcballRotation = deltaQ * arcballRotation;
-                update();
-            }
-            lastPointOnSphere = currentPoint;
-            lastMousePos = event->pos();
-            
-        } else if (isPanning && (event->buttons() & (Qt::RightButton | Qt::MiddleButton))) {
-            QPoint delta = event->pos() - lastMousePos;
-            // Скорость панорамирования зависит от размера модели и зума
-            float panSpeed = 0.005f * (mesh.radius * 2.0f) / zoom;
-            panX += delta.x() * panSpeed;
-            panY -= delta.y() * panSpeed; // Y инвертирован в экранных координатах
-            lastMousePos = event->pos();
-            update();
-        }
+void GLWidget:: mouseDoubleClickEvent(QMouseEvent *event)  {
+    if (event->button() == Qt::LeftButton) {
+        // Сброс вида
+        arcballRotation = QQuaternion();
+        zoom = 1.0f;
+        // panX = 0.0f;
+        // panY = 0.0f;
+        update();
     }
-
-    void GLWidget:: mouseReleaseEvent(QMouseEvent *event)  {
-        if (event->button() == Qt::LeftButton) {
-            isRotating = false;
-        } else if (event->button() == Qt::RightButton || event->button() == Qt::MiddleButton) {
-            isPanning = false;
-        }
-    }
-
-    void GLWidget:: mouseDoubleClickEvent(QMouseEvent *event)  {
-        if (event->button() == Qt::LeftButton) {
-            // Сброс вида
-            arcballRotation = QQuaternion();
-            zoom = 1.0f;
-            panX = 0.0f;
-            panY = 0.0f;
-            update();
-        }
-    }
-
+}
 
 // --- Получение данных из worker'а ---
 void GLWidget::onDataReady(RenderDataPtr data) {
@@ -259,7 +238,6 @@ void GLWidget::uploadToGpu() {
     doneCurrent();
 }
 
-
 // --- Матрица mvp ---
 void GLWidget::rebuildMvp() {
     const float aspect = (height() == 0) ? 1.0f
@@ -287,21 +265,19 @@ void GLWidget::rebuildMvp() {
     m_mvp = proj * view * model;
 }
 
-
 // Проекция 2D-координат мыши на единичную сферу (классический Arcball Shoemake)
-    QVector3D GLWidget::mapToSphere(const QPoint& p) const{
-        float x = (2.0f * p.x() - width()) / width();
-        float y = (height() - 2.0f * p.y()) / height(); // Y инвертирован
-        float r2 = x * x + y * y;
-        float z;
-        if (r2 <= 0.5f) {
-            z = std::sqrt(1.0f - r2); // внутри сферы
-        } else {
-            z = 0.5f / std::sqrt(r2); // снаружи (гиперболический лист для избежания разрывов)
-        }
-        return QVector3D(x, y, z).normalized();
+QVector3D GLWidget::mapToSphere(const QPoint& p) const{
+    float x = (2.0f * p.x() - width()) / width();
+    float y = (height() - 2.0f * p.y()) / height(); // Y инвертирован
+    float r2 = x * x + y * y;
+    float z;
+    if (r2 <= 0.5f) {
+        z = std::sqrt(1.0f - r2); // внутри сферы
+    } else {
+        z = 0.5f / std::sqrt(r2); // снаружи (гиперболический лист для избежания разрывов)
     }
-
+    return QVector3D(x, y, z).normalized();
+}
 
 //--------------------------------------------------------------------
 int stl_review(const QString& initial_stl_title, int argc, char* argv[]) {

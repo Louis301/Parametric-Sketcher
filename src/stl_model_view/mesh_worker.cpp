@@ -1,4 +1,5 @@
 #include "mesh_worker.h"
+
 #include <algorithm>
 #include <cmath>
 
