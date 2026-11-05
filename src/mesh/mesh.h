@@ -2,9 +2,6 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <igl/cotmatrix.h>
-#include <igl/massmatrix.h>
-#include <igl/principal_curvature.h>
 #include <vector>
 #include <unordered_map>
 #include <cmath>

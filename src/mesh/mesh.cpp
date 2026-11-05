@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <sstream>
 #include <cstring>
+#include <igl/cotmatrix.h>
+#include <igl/massmatrix.h>
 
 
 static constexpr uint32_t MAX_TRIANGLES = 50'000'000;
@@ -71,8 +73,6 @@ static STLFormat detectSTLFormat(const std::string& filename) {
 }
 
 // ============================================================
-// Загрузка бинарного STL
-// ============================================================
 static bool loadBinarySTL(std::ifstream& file,
                           std::vector<Eigen::Vector3d>& rawVertices,
                           std::vector<Eigen::Vector3i>& rawFaces,
@@ -104,8 +104,6 @@ static bool loadBinarySTL(std::ifstream& file,
     return true;
 }
 
-// ============================================================
-// Загрузка ASCII STL
 // ============================================================
 static bool loadAsciiSTL(std::ifstream& file,
                          std::vector<Eigen::Vector3d>& rawVertices,
@@ -155,8 +153,6 @@ static bool loadAsciiSTL(std::ifstream& file,
     return triangleCount > 0;
 }
 
-// ============================================================
-// Основная функция загрузки
 // ============================================================
 bool Mesh::loadFromSTL(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
@@ -425,16 +421,7 @@ void Mesh::computeCurvature() {
         double k1 = H + sqrtD;
         double k2 = H - sqrtD;
         
-      if (!vertices.empty() && static_cast<int>(vertices.size()) == n) {
-          for (int i = 0; i < n; ++i) {
-              vertices[i].curvature = meanCurvature[i];//(H - minH) / range;
-          }
-      } else {
-          std::cerr << "[Warning] vertices vector is empty or size mismatch ("
-                    << vertices.size() << " vs " << n 
-                    << "). Call buildTopology() before computeCurvature()." << std::endl;
-          std::cerr << "[Warning] Curvature computed but not mapped to vertices." << std::endl;
-      }
+   
     }
     
     // Нормализация для тепловой карты

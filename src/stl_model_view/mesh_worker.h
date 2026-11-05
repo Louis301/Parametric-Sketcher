@@ -1,12 +1,13 @@
 #pragma once
 
+#include "render_data.h"
+#include "../mesh/mesh.h"
+
 #include <QObject>
 #include <QThread>
 #include <atomic>
 #include <memory>
 #include <QString>
-#include "render_data.h"
-#include "../mesh/mesh.h"
 
 class MeshWorker : public QObject {
     Q_OBJECT
@@ -16,11 +17,9 @@ public:
     void requestCancel() { m_cancelled.store(true); }
 
 signals:
-    void progress(int percent, QString stage);  // убрать?
-    // void startWork(const QString& path); 
+    void progress(int percent, QString stage);
     void finished(RenderDataPtr data);
     void failed(QString reason);
-    // void loadFailed(const QString& reason);
 
 public slots:
     void process(const QString& stlPath);

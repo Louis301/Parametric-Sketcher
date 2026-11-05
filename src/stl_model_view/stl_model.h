@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "render_data.h"
+#include "mesh_worker.h"
+
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
@@ -13,11 +16,6 @@
 #include <QWheelEvent>
 #include <QKeyEvent>
 #include <QDialog>
-
-#include "render_data.h"
-#include "mesh_worker.h"
-
-
 #include <QString>
 
 int stl_review(const QString& stl_title, int argc, char* argv[]);
