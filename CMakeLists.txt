@@ -4,6 +4,10 @@ project(ParametricSketcher)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_AUTOMOC ON)    # ← КРИТИЧНО: MOC обрабатывает Q_OBJECT
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
 # Находим Qt5
 find_package(Qt5 COMPONENTS Core Widgets OpenGL REQUIRED)
 
@@ -19,6 +23,7 @@ add_executable(cad_test
     src/main.cpp
     src/stl_model_view/stl_model.cpp
     src/mesh/mesh.cpp
+    src/stl_model_view/mesh_worker.cpp
 )
 
 # Подключаем Qt и OpenGL

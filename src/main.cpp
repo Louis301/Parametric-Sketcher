@@ -5,7 +5,7 @@ int EXIT_STATUS = 0;
 //----------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[]) 
 {
-	EXIT_STATUS = stl_review("manufactory.stl", argc, argv);
+	EXIT_STATUS = stl_review("factory.stl", argc, argv);
 	return EXIT_STATUS;
 }
 
